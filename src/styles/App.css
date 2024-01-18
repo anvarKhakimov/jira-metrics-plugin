@@ -1,0 +1,110 @@
+a:link, a:visited, a:hover, a:active {
+  color: #0000EE; 
+  text-decoration: none; 
+}
+
+a:hover {
+  text-decoration: underline; 
+}
+
+.loader-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); /* полупрозрачный черный фон */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* чтобы лоадер был поверх остального контента */
+  }
+  
+  .loader {
+    color: white;
+    font-size: 24px;
+  }
+
+  .filter-button {
+    padding: 10px 15px;
+    margin: 5px;
+    border: none;
+    cursor: pointer;
+    background-color: #ddd;
+  }
+  
+  .filter-button.active {
+    background-color: #555;
+    color: #fff;
+  }
+  
+/* timeline */
+
+.timeline-container {
+  display: flex;
+  flex-direction: column;
+  margin: 10px;
+}
+
+.dates {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.timeline {
+  display: flex;
+  height: 30px; /* Высота полосы таймлайна */
+  background-color: #f1f1f1; /* Фон полосы таймлайна */
+  border-radius: 5px; /* Скругление краев полосы таймлайна */
+  overflow: hidden; /* Скрываем содержимое, выходящее за пределы полосы таймлайна */
+}
+
+.timeline-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  padding: 0 2px; /* Паддинги для текста внутри сегмента */
+}
+
+/* Примеры цветов для сегментов. Нужно определить классы для всех статусов, которые будут использоваться. */
+.color0 { background-color: #3182BD; }
+.color1 { background-color: #6BAED6; }
+.color2 { background-color: #9ECAE1; }
+.color3 { background-color: #C6DBEF; }
+.color4 { background-color: #E6550D; }
+.color5 { background-color: #FD8D3C; }
+.color6 { background-color: #FDAE6B; }
+.color7 { background-color: #FDD0A2; }
+.color8 { background-color: #31A354; }
+.color9 { background-color: #74C476; }
+.color10 { background-color: #A1D99B; }
+.color11 { background-color: #C7E9C0; }
+.color12 { background-color: #756BB1; }
+.color13 { background-color: #9E9AC8; }
+.color14 { background-color: #BCBDDC; }
+.color15 { background-color: #DADAEB; }
+.color16 { background-color: #636363; }
+.color17 { background-color: #969696; }
+.color18 { background-color: #BDBDBD; }
+.color19 { background-color: #D9D9D9; }
+.color20 { background-color: #8DD3C7; }
+.color21 { background-color: #FFFFB3; }
+.color22 { background-color: #BEBADA; }
+.color23 { background-color: #FB8072; }
+.color24 { background-color: #80B1D3; }
+.color25 { background-color: #FDB462; }
+.color26 { background-color: #B3DE69; }
+.color27 { background-color: #FCCDE5; }
+.color28 { background-color: #D9D9D9; }
+.color29 { background-color: #BC80BD; }
+
+
+/* Опционально: стили для текста внутри сегментов, если он будет отображаться */
+.timeline-segment > span {
+  font-size: 12px; /* Размер шрифта текста */
+  color: white; /* Цвет текста */
+  user-select: none; /* Запретить выделение текста */
+}
