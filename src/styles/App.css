@@ -1,43 +1,46 @@
-a:link, a:visited, a:hover, a:active {
-  color: #0000EE; 
-  text-decoration: none; 
+a:link,
+a:visited,
+a:hover,
+a:active {
+  color: #0000ee;
+  text-decoration: none;
 }
 
 a:hover {
-  text-decoration: underline; 
+  text-decoration: underline;
 }
 
 .loader-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5); /* полупрозрачный черный фон */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999; /* чтобы лоадер был поверх остального контента */
-  }
-  
-  .loader {
-    color: white;
-    font-size: 24px;
-  }
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* полупрозрачный черный фон */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* чтобы лоадер был поверх остального контента */
+}
 
-  .filter-button {
-    padding: 10px 15px;
-    margin: 5px;
-    border: none;
-    cursor: pointer;
-    background-color: #ddd;
-  }
-  
-  .filter-button.active {
-    background-color: #555;
-    color: #fff;
-  }
-  
+.loader {
+  color: white;
+  font-size: 24px;
+}
+
+.filter-button {
+  padding: 10px 15px;
+  margin: 5px;
+  border: none;
+  cursor: pointer;
+  background-color: #ddd;
+}
+
+.filter-button.active {
+  background-color: #555;
+  color: #fff;
+}
+
 /* timeline */
 
 .timeline-container {
@@ -70,37 +73,96 @@ a:hover {
 }
 
 /* Примеры цветов для сегментов. Нужно определить классы для всех статусов, которые будут использоваться. */
-.color0 { background-color: #3182BD; }
-.color1 { background-color: #6BAED6; }
-.color2 { background-color: #9ECAE1; }
-.color3 { background-color: #C6DBEF; }
-.color4 { background-color: #E6550D; }
-.color5 { background-color: #FD8D3C; }
-.color6 { background-color: #FDAE6B; }
-.color7 { background-color: #FDD0A2; }
-.color8 { background-color: #31A354; }
-.color9 { background-color: #74C476; }
-.color10 { background-color: #A1D99B; }
-.color11 { background-color: #C7E9C0; }
-.color12 { background-color: #756BB1; }
-.color13 { background-color: #9E9AC8; }
-.color14 { background-color: #BCBDDC; }
-.color15 { background-color: #DADAEB; }
-.color16 { background-color: #636363; }
-.color17 { background-color: #969696; }
-.color18 { background-color: #BDBDBD; }
-.color19 { background-color: #D9D9D9; }
-.color20 { background-color: #8DD3C7; }
-.color21 { background-color: #FFFFB3; }
-.color22 { background-color: #BEBADA; }
-.color23 { background-color: #FB8072; }
-.color24 { background-color: #80B1D3; }
-.color25 { background-color: #FDB462; }
-.color26 { background-color: #B3DE69; }
-.color27 { background-color: #FCCDE5; }
-.color28 { background-color: #D9D9D9; }
-.color29 { background-color: #BC80BD; }
-
+.color0 {
+  background-color: #1f77b4;
+}
+.color1 {
+  background-color: #ff7f0e;
+}
+.color2 {
+  background-color: #2ca02c;
+}
+.color3 {
+  background-color: #d62728;
+}
+.color4 {
+  background-color: #9467bd;
+}
+.color5 {
+  background-color: #8c564b;
+}
+.color6 {
+  background-color: #e377c2;
+}
+.color7 {
+  background-color: #7f7f7f;
+}
+.color8 {
+  background-color: #bcbd22;
+}
+.color9 {
+  background-color: #17becf;
+}
+.color10 {
+  background-color: #aec7e8;
+}
+.color11 {
+  background-color: #ffbb78;
+}
+.color12 {
+  background-color: #98df8a;
+}
+.color13 {
+  background-color: #ff9896;
+}
+.color14 {
+  background-color: #c5b0d5;
+}
+.color15 {
+  background-color: #c49c94;
+}
+.color16 {
+  background-color: #f7b6d2;
+}
+.color17 {
+  background-color: #c7c7c7;
+}
+.color18 {
+  background-color: #dbdb8d;
+}
+.color19 {
+  background-color: #9edae5;
+}
+.color20 {
+  background-color: #ad494a;
+}
+.color21 {
+  background-color: #8c6d31;
+}
+.color22 {
+  background-color: #bd9e39;
+}
+.color23 {
+  background-color: #e7ba52;
+}
+.color24 {
+  background-color: #e7cb94;
+}
+.color25 {
+  background-color: #843c39;
+}
+.color26 {
+  background-color: #d6616b;
+}
+.color27 {
+  background-color: #7b4173;
+}
+.color28 {
+  background-color: #a55194;
+}
+.color29 {
+  background-color: #ce6dbd;
+}
 
 /* Опционально: стили для текста внутри сегментов, если он будет отображаться */
 .timeline-segment > span {

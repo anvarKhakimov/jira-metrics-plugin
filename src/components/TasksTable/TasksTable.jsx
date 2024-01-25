@@ -16,7 +16,8 @@ import { blue } from '@mui/material/colors';
 import Tooltip from '@mui/material/Tooltip';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import useJiraData from '../../contexts/JiraDataContext';
+import { useJiraDataContext } from '../../contexts/JiraDataContext';
+import { useChartDataContext } from '../../contexts/ChartDataContext';
 import { durationToReadableFormat, debugLog } from '../../utils/utils';
 
 function TaskTimeline({ task, columnNames }) {
@@ -72,10 +73,7 @@ function TaskTimeline({ task, columnNames }) {
   });
 
   // Сумма продолжительностей всех сегментов для расчета доли каждого сегмента
-  const totalDuration = timelineData.reduce(
-    (total, { duration }) => total + duration,
-    0
-  );
+  const totalDuration = timelineData.reduce((total, { duration }) => total + duration, 0);
 
   const positionRef = React.useRef({
     x: 0,
@@ -139,7 +137,7 @@ function TaskTimeline({ task, columnNames }) {
 }
 
 function Row({ taskKey, task, cfdData, selectedColumns, index }) {
-  const { jiraBaseUrl } = useJiraData();
+  const { jiraBaseUrl } = useJiraDataContext();
   const [open, setOpen] = useState(false);
   const rowColor = index % 2 === 0 ? '#fafafa' : '#ffffff';
   const jiraDomain = new URL(jiraBaseUrl).origin;
@@ -153,30 +151,20 @@ function Row({ taskKey, task, cfdData, selectedColumns, index }) {
           </IconButton>
         </TableCell>
         <TableCell component="th" scope="row">
-          <a
-            href={`${jiraDomain}/browse/${taskKey}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a href={`${jiraDomain}/browse/${taskKey}`} target="_blank" rel="noopener noreferrer">
             {taskKey}
           </a>
         </TableCell>
-        <TableCell align="right">
-          {durationToReadableFormat(task.leadTime)}
-        </TableCell>
+        <TableCell align="right">{durationToReadableFormat(task.leadTime)}</TableCell>
         {cfdData.columns.map((column) => {
           if (selectedColumns.includes(column.name)) {
-            const columnIndex = cfdData.columns.findIndex(
-              (col) => col.name === column.name
-            );
+            const columnIndex = cfdData.columns.findIndex((col) => col.name === column.name);
             // Используем имя колонки для получения продолжительности из task.durations
             const columnDuration = task.durations[columnIndex] || 0;
 
             return (
               <TableCell key={column.name} align="right">
-                {columnDuration
-                  ? durationToReadableFormat(columnDuration)
-                  : '0'}
+                {columnDuration ? durationToReadableFormat(columnDuration) : '0'}
               </TableCell>
             );
           }
@@ -184,19 +172,13 @@ function Row({ taskKey, task, cfdData, selectedColumns, index }) {
         })}
       </TableRow>
       <TableRow>
-        <TableCell
-          style={{ paddingBottom: 0, paddingTop: 0 }}
-          colSpan={6 + selectedColumns.length}
-        >
+        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6 + selectedColumns.length}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box margin={1}>
               <Typography variant="h6" gutterBottom component="div">
                 Timeline
               </Typography>
-              <TaskTimeline
-                task={task}
-                columnNames={cfdData.columns}            
-              />
+              <TaskTimeline task={task} columnNames={cfdData.columns} />
             </Box>
           </Collapse>
         </TableCell>
@@ -205,12 +187,12 @@ function Row({ taskKey, task, cfdData, selectedColumns, index }) {
   );
 }
 
-function TasksTable({ displayedTasks, cfdData, selectedColumns }) {
+function TasksTable() {
   debugLog('Tasks Table');
+  const { cfdData } = useJiraDataContext();
+  const { displayedTasks, selectedColumns } = useChartDataContext();
   const tasksEntries = Object.entries(displayedTasks);
-  const columnsInOrder = cfdData.columns.filter((column) =>
-    selectedColumns.includes(column.name)
-  );
+  const columnsInOrder = cfdData.columns.filter((column) => selectedColumns.includes(column.name));
 
   return (
     <TableContainer component={Paper}>

@@ -9,7 +9,8 @@ import {
   ResponsiveContainer,
   LabelList,
 } from 'recharts';
-
+import { useJiraDataContext } from '../../contexts/JiraDataContext';
+import { useChartDataContext } from '../../contexts/ChartDataContext';
 import { prepareFilteredTasks, prepareHistogramArray } from '../../utils/utils';
 import Filters from '../Filters/Filters';
 
@@ -49,26 +50,28 @@ function addTrendData(chartData) {
   }));
 }
 
-function PredictabilityChart({
-  tasks,
-  columns,
-  selectedColumns,
-  setSelectedColumns,
-  timeframeFrom,
-  setTimeframeFrom,
-  timeframeTo,
-  setTimeframeTo,
-  allFilters,
-  activeFilters,
-  toggleFilter,
-  allSwimlanes,
-  activeSwimlanes,
-  updateActiveSwimlanes,
-  resolution,
-  setResolution,
-}) {
+function PredictabilityChart() {
+  const { cfdData } = useJiraDataContext();
+  const {
+    tasks,
+    selectedColumns,
+    setSelectedColumns,
+    timeframeFrom,
+    setTimeframeFrom,
+    timeframeTo,
+    setTimeframeTo,
+    allFilters,
+    activeFilters,
+    toggleFilter,
+    allSwimlanes,
+    activeSwimlanes,
+    updateActiveSwimlanes,
+    resolution,
+    setResolution,
+  } = useChartDataContext();
   const [details, setDetails] = useState({});
   const [showCalculations, setShowCalculations] = useState(false);
+  const columns = cfdData ? cfdData.columns : [];
 
   const handleCheckboxChange = (event) => {
     setShowCalculations(event.target.checked);
