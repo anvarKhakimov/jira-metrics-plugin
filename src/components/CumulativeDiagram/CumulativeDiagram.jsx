@@ -18,10 +18,9 @@ const formatDate = (timestamp) => {
 function CumulativeDiagram() {
   const [colors, setColors] = useState([]);
   const [selectedDateDetails, setSelectedDateDetails] = useState(null);
-
-  const { cfdData } = useJiraDataContext();
-
+  const { cfdData, jiraBaseUrl } = useJiraDataContext();
   const { displayedTasks, timeframeFrom, timeframeTo } = useChartDataContext();
+  const jiraDomain = new URL(jiraBaseUrl).origin;
 
   const handleChartClick = (data) => {
     if (data && data.tasksDetails) {
@@ -55,6 +54,10 @@ function CumulativeDiagram() {
     const oneYearAgo = new Date();
     oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
 
+    if (!displayedTasks || Object.keys(displayedTasks).length === 0) {
+      return oneYearAgo;
+    }
+
     Object.values(displayedTasks).forEach((task) => {
       Object.values(task.starts).forEach((phaseStarts) => {
         phaseStarts.forEach((startTimestamp) => {
@@ -76,7 +79,6 @@ function CumulativeDiagram() {
   const earliestStartDate = findEarliestStartDate();
   const adjustedTimeframeFrom =
     new Date(timeframeFrom) > earliestStartDate ? new Date(timeframeFrom) : earliestStartDate;
-  // const adjustedTimeframeFrom = new Date(timeframeFrom);
   const timeframeDates = generateDateSeries(adjustedTimeframeFrom, new Date(timeframeTo));
 
   const generateChartData = () => {
@@ -124,27 +126,19 @@ function CumulativeDiagram() {
 
   const chartData = generateChartData();
 
-  // Опции для Highcharts
   const options = {
     chart: {
       type: 'area',
       events: {
         click(event) {
-          // Получение координаты X клика относительно оси X
           const xValue = this.xAxis[0].toValue(event.chartX);
-
-          // Преобразование координаты X в дату
           const clickedDate = new Date(xValue);
-
-          // Найти ближайший объект данных в chartData по дате
           const closestDataPoint = chartData.reduce((prev, curr) =>
             Math.abs(curr.date - clickedDate) < Math.abs(prev.date - clickedDate) ? curr : prev
           );
 
-          // Получение taskDetails из ближайшей точки данных
           const tasksDetails = closestDataPoint ? closestDataPoint.tasksDetails : null;
 
-          // Вызов handleChartClick с найденными данными
           handleChartClick({
             date: new Date(closestDataPoint.date),
             tasksDetails,
@@ -172,11 +166,13 @@ function CumulativeDiagram() {
     tooltip: {
       shared: true,
       crosshairs: true,
+      useHTML: true, 
       formatter() {
-        let tooltip = `<b>${formatDate(this.x)}</b><br/>`;
+        let tooltip = `<table style="font-size: 13px;"><thead><tr><th colspan="2"><b>${formatDate(this.x)}</b></th></tr></thead><tbody>`;
         this.points.forEach((point) => {
-          tooltip += `<span style="color:${point.series.color}">●</span> ${point.series.name}: <b>${point.y}</b><br/>`;
+          tooltip += `<tr><td><span style="color:${point.series.color}">●</span> ${point.series.name}</td><td style="text-align: right;"><b>${point.y}</b></td></tr>`;
         });
+        tooltip += '</tbody></table>';
         return tooltip;
       },
     },
@@ -197,6 +193,10 @@ function CumulativeDiagram() {
         },
       },
       series: {
+        marker: {
+          enabled: true,
+          symbol: 'diamond' 
+        },
         point: {
           events: {
             click() {
@@ -229,10 +229,14 @@ function CumulativeDiagram() {
           <h3>Issues for {selectedDateDetails.date.toLocaleDateString()}:</h3>
           {Object.entries(selectedDateDetails.tasksDetails).map(([status, tasks]) => (
             <div key={status}>
-              <h4>{status}</h4>
+              <h4>{status} ({tasks.length})</h4>
               <ul>
                 {tasks.map((taskId) => (
-                  <li key={taskId}>{taskId}</li> // Используем taskId в качестве ключа
+                  <li key={taskId}>
+                    <a href={`${jiraDomain}/browse/${taskId}`} target="_blank" rel="noopener noreferrer">
+                      {taskId}
+                    </a>
+                  </li>
                 ))}
               </ul>
             </div>

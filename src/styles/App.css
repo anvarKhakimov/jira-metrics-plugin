@@ -164,7 +164,6 @@ a:hover {
   background-color: #ce6dbd;
 }
 
-/* Опционально: стили для текста внутри сегментов, если он будет отображаться */
 .timeline-segment > span {
   font-size: 12px; /* Размер шрифта текста */
   color: white; /* Цвет текста */

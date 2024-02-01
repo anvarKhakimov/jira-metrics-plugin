@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "Jira Metrics Plugin",
     "description": "This extension provides simple graphs based on Jira column data, featuring lead time and predictability charts.",
-    "version": "2024.01.11",
+    "version": "2024.02.01",
     "icons": {
       "16": "assets/icon16.png",
       "32": "assets/icon32.png",

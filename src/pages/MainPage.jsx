@@ -6,7 +6,6 @@ import LeadTimeChart from '../components/LeadTimeChart/LeadTimeChart';
 import FullScreenLoader from '../components/FullScreenLoader';
 import PredictabilityChart from '../components/PredictabilityChart/PredictabilityChart';
 import TasksTable from '../components/TasksTable/TasksTable';
-import ControlChart2 from '../components/ControlChart/ControlChart2';
 import CumulativeDiagram from '../components/CumulativeDiagram/CumulativeDiagram';
 import { sendPageViewEvent } from '../utils/google-analytics';
 import { isDebug } from '../utils/utils';
@@ -35,9 +34,12 @@ export default function MainPage() {
         await sendPageViewEvent('Lead Time Histogram', 'leadTime');
         break;
       case 1:
-        await sendPageViewEvent('Predictability Chart', 'predictability');
+        await sendPageViewEvent('Cumulative Flow Diagram', 'cfd');
         break;
       case 2:
+        await sendPageViewEvent('Predictability Chart', 'predictability');
+        break;
+      case 3:
         await sendPageViewEvent('Tasks Table', 'tasks');
         break;
       default:
@@ -64,7 +66,6 @@ export default function MainPage() {
           <Tab label="CFD" />
           <Tab label="Predictability" />
           <Tab label="Tasks Table" />
-          <Tab label="Control Chart" />
         </Tabs>
       </AppBar>
       {boardConfig && boardConfig.name && (
@@ -85,9 +86,6 @@ export default function MainPage() {
       </TabPanel>
       <TabPanel value={value} index={3}>
         <TasksTable />
-      </TabPanel>
-      <TabPanel value={value} index={4}>
-        <ControlChart2 />
       </TabPanel>
     </ChartDataProvider>
   );

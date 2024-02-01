@@ -69,7 +69,7 @@ function Histogram({ histogramData }) {
         <YAxis
           width={40} // устанавливаем фиксированную ширину оси
           label={{
-            value: "Number of Tasks",
+            value: "Number of Issues",
             angle: -90,
             position: "insideLeft",
             style: { fontSize: "10px", textAnchor: "middle" },
