@@ -1,13 +1,12 @@
 import React from 'react';
 import { AppBar, Tabs, Tab, Box, Typography } from '@mui/material';
-import useJiraData from '../contexts/JiraDataContext';
-import useChartData from '../hooks/useChartData';
+import { useJiraDataContext } from '../contexts/JiraDataContext';
+import { ChartDataProvider } from '../contexts/ChartDataContext';
 import LeadTimeChart from '../components/LeadTimeChart/LeadTimeChart';
-import TasksList from '../components/LeadTimeChart/TasksList';
 import FullScreenLoader from '../components/FullScreenLoader';
 import PredictabilityChart from '../components/PredictabilityChart/PredictabilityChart';
 import TasksTable from '../components/TasksTable/TasksTable';
-import ControlChart from '../components/ControlChart/ControlChart';
+import CumulativeDiagram from '../components/CumulativeDiagram/CumulativeDiagram';
 import { sendPageViewEvent } from '../utils/google-analytics';
 import { isDebug } from '../utils/utils';
 
@@ -22,32 +21,7 @@ function TabPanel(props) {
 }
 
 export default function MainPage() {
-  const {
-    isLoading,
-    boardConfig,
-    cfdData,
-    allSwimlanes,
-    activeSwimlanes,
-    updateActiveSwimlanes,
-    updateUserFilters,
-  } = useJiraData();
-
-  const {
-    tasks,
-    displayedTasks,
-    selectedColumns,
-    histogramData,
-    setSelectedColumns,
-    timeframeFrom,
-    setTimeframeFrom,
-    timeframeTo,
-    setTimeframeTo,
-    allFilters,
-    activeFilters,
-    toggleFilter,
-    resolution,
-    setResolution,
-  } = useChartData(boardConfig, cfdData, updateUserFilters);
+  const { isLoading, boardConfig, cfdData, updateUserFilters } = useJiraDataContext();
 
   const [value, setValue] = React.useState(0);
 
@@ -60,9 +34,12 @@ export default function MainPage() {
         await sendPageViewEvent('Lead Time Histogram', 'leadTime');
         break;
       case 1:
-        await sendPageViewEvent('Predictability Chart', 'predictability');
+        await sendPageViewEvent('Cumulative Flow Diagram', 'cfd');
         break;
       case 2:
+        await sendPageViewEvent('Predictability Chart', 'predictability');
+        break;
+      case 3:
         await sendPageViewEvent('Tasks Table', 'tasks');
         break;
       default:
@@ -72,7 +49,11 @@ export default function MainPage() {
   };
 
   return (
-    <div>
+    <ChartDataProvider
+      boardConfig={boardConfig}
+      cfdData={cfdData}
+      updateUserFilters={updateUserFilters}
+    >
       <FullScreenLoader isLoading={isLoading} />
       <AppBar
         position="static"
@@ -81,11 +62,10 @@ export default function MainPage() {
         elevation={0}
       >
         <Tabs value={value} onChange={handleChange}>
-          <Tab label="Lead Time Histogram" />
-          <Tab label="Predictability Chart" />
+          <Tab label="Lead Time" />
+          <Tab label="CFD" />
+          <Tab label="Predictability" />
           <Tab label="Tasks Table" />
-          {/* <Tab label="Control Chart" /> */}
-          {/* <Tab label="Tasks List" /> */}
         </Tabs>
       </AppBar>
       {boardConfig && boardConfig.name && (
@@ -96,67 +76,17 @@ export default function MainPage() {
         </Box>
       )}
       <TabPanel value={value} index={0}>
-        <LeadTimeChart
-          histogramData={histogramData}
-          selectedColumns={selectedColumns}
-          setSelectedColumns={setSelectedColumns}
-          timeframeFrom={timeframeFrom}
-          setTimeframeFrom={setTimeframeFrom}
-          timeframeTo={timeframeTo}
-          setTimeframeTo={setTimeframeTo}
-          allFilters={allFilters}
-          activeFilters={activeFilters}
-          toggleFilter={toggleFilter}
-          allSwimlanes={allSwimlanes}
-          activeSwimlanes={activeSwimlanes}
-          updateActiveSwimlanes={updateActiveSwimlanes}
-          resolution={resolution}
-          setResolution={setResolution}
-        />
+        <LeadTimeChart />
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <PredictabilityChart
-          tasks={tasks}
-          columns={cfdData ? cfdData.columns : []}
-          selectedColumns={selectedColumns}
-          setSelectedColumns={setSelectedColumns}
-          timeframeFrom={timeframeFrom}
-          setTimeframeFrom={setTimeframeFrom}
-          timeframeTo={timeframeTo}
-          setTimeframeTo={setTimeframeTo}
-          allFilters={allFilters}
-          activeFilters={activeFilters}
-          toggleFilter={toggleFilter}
-          allSwimlanes={allSwimlanes}
-          activeSwimlanes={activeSwimlanes}
-          updateActiveSwimlanes={updateActiveSwimlanes}
-          resolution={resolution}
-          setResolution={setResolution}
-        />
+        <CumulativeDiagram />
       </TabPanel>
       <TabPanel value={value} index={2}>
-        <TasksTable
-          displayedTasks={displayedTasks}
-          cfdData={cfdData}
-          selectedColumns={selectedColumns}
-        />
+        <PredictabilityChart />
       </TabPanel>
       <TabPanel value={value} index={3}>
-        <ControlChart
-          displayedTasks={displayedTasks}
-          cfdData={cfdData}
-          selectedColumns={selectedColumns}
-          timeframeFrom={timeframeFrom}
-          timeframeTo={timeframeTo}
-        />
+        <TasksTable />
       </TabPanel>
-      <TabPanel value={value} index={4}>
-        <TasksList
-          displayedTasks={displayedTasks}
-          cfdData={cfdData}
-          selectedColumns={selectedColumns}
-        />
-      </TabPanel>
-    </div>
+    </ChartDataProvider>
   );
 }

@@ -4,7 +4,7 @@ import React, {
   useContext,
   useEffect,
   useCallback,
-  useMemo
+  useMemo,
 } from 'react';
 import { fetchBoardConfig, fetchCFDData } from '../services/jiraAPI';
 import { debugLog } from '../utils/utils';
@@ -112,7 +112,7 @@ export function JiraDataProvider({ children }) {
       boardConfig,
       rapidView,
       activeSwimlanes,
-      filters,
+      filters
     );
     debugLog('CFD data loaded', cfdDataLoaded);
     setCFDData(cfdDataLoaded);
@@ -140,19 +140,31 @@ export function JiraDataProvider({ children }) {
     debugLog('Filters updated');
   }, []);
 
-  const contextValue = useMemo(() => ({
-    isLoading,
-    jiraBaseUrl,
-    rapidView,
-    boardConfig,
-    cfdData,
-    filters,
-    allSwimlanes,
-    activeSwimlanes,
-    updateActiveSwimlanes,
-    loadCFDData,
-    updateUserFilters,
-  }),[isLoading, jiraBaseUrl, rapidView, boardConfig, cfdData, filters, allSwimlanes, activeSwimlanes]);
+  const contextValue = useMemo(
+    () => ({
+      isLoading,
+      jiraBaseUrl,
+      rapidView,
+      boardConfig,
+      cfdData,
+      filters,
+      allSwimlanes,
+      activeSwimlanes,
+      updateActiveSwimlanes,
+      loadCFDData,
+      updateUserFilters,
+    }),
+    [
+      isLoading,
+      jiraBaseUrl,
+      rapidView,
+      boardConfig,
+      cfdData,
+      filters,
+      allSwimlanes,
+      activeSwimlanes,
+    ]
+  );
 
   return (
     <JiraDataContext.Provider value={contextValue}>
@@ -161,6 +173,4 @@ export function JiraDataProvider({ children }) {
   );
 }
 
-const useJiraData = () => useContext(JiraDataContext);
-
-export default useJiraData;
+export const useJiraDataContext = () => useContext(JiraDataContext);

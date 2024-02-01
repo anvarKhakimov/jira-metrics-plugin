@@ -103,6 +103,10 @@ function TimeframePicker({
     });
   };
 
+  const handleKeyDown = (e) => {
+    e.preventDefault();
+  };
+
   return (
     <>
       <FormControl sx={{ marginX: 1, minWidth: 120 }}>
@@ -128,16 +132,20 @@ function TimeframePicker({
         type="date"
         value={timeframeFrom}
         onChange={handleTimeframeFromChange}
+        onKeyDown={handleKeyDown}
         InputLabelProps={{ shrink: true }}
         sx={{ marginX: 1 }}
+        inputProps={{ max: timeframeTo }}
       />
       <TextField
         label="To"
         type="date"
         value={timeframeTo}
         onChange={handleTimeframeToChange}
+        onKeyDown={handleKeyDown}
         InputLabelProps={{ shrink: true }}
         sx={{ marginX: 1 }}
+        inputProps={{ min: timeframeFrom }}
       />
     </>
   );

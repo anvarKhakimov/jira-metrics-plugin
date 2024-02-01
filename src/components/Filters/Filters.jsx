@@ -1,33 +1,39 @@
-import React from "react";
-import Box from "@mui/material/Box";
-import Resolution from "./Resolution";
-import TimeframePicker from "./TimeframePicker";
-import SelectColumns from "./SelectColumns";
-import SelectSwimlanes from "./SelectSwimlanes";
-import FilterButton from "./FilterButton";
+import React from 'react';
+import Box from '@mui/material/Box';
+import { useJiraDataContext } from '../../contexts/JiraDataContext';
+import { useChartDataContext } from '../../contexts/ChartDataContext';
+import Resolution from './Resolution';
+import TimeframePicker from './TimeframePicker';
+import SelectColumns from './SelectColumns';
+import SelectSwimlanes from './SelectSwimlanes';
+import FilterButton from './FilterButton';
 
 function Filters({
-  selectedColumns,
-  setSelectedColumns,
-  columns,
-  timeframeFrom,
-  setTimeframeFrom,
-  timeframeTo,
-  setTimeframeTo,
-  allFilters,
-  activeFilters,
-  toggleFilter,
-  allSwimlanes,
-  activeSwimlanes,
-  updateActiveSwimlanes,
-  resolution,
-  setResolution,
   showResolution = true,
   showTimeframe = true,
   showSwimlanes = true,
   showColumns = true,
   showFilters = true,
 }) {
+  const { cfdData, allSwimlanes, activeSwimlanes, updateActiveSwimlanes } =
+    useJiraDataContext();
+
+  const {
+    selectedColumns,
+    setSelectedColumns,
+    timeframeFrom,
+    setTimeframeFrom,
+    timeframeTo,
+    setTimeframeTo,
+    allFilters,
+    activeFilters,
+    toggleFilter,
+    resolution,
+    setResolution,
+  } = useChartDataContext();
+
+  const columns = cfdData ? cfdData.columns : [];
+
   return (
     <div>
       <Box
