@@ -88,7 +88,6 @@ function CumulativeDiagram() {
       cfdData.columns.forEach((column) => {
         // Инициализация счетчика задач для каждой колонки
         dataPoint[column.name] = 0;
-        // Правильное место для инициализации массива задач для каждого статуса
         dataPoint.tasksDetails[column.name] = [];
 
         Object.keys(displayedTasks).forEach((taskId) => {
@@ -129,6 +128,7 @@ function CumulativeDiagram() {
   const options = {
     chart: {
       type: 'area',
+      zoomType: 'x',
       events: {
         click(event) {
           const xValue = this.xAxis[0].toValue(event.chartX);
@@ -166,7 +166,7 @@ function CumulativeDiagram() {
     tooltip: {
       shared: true,
       crosshairs: true,
-      useHTML: true, 
+      useHTML: true,
       formatter() {
         let tooltip = `<table style="font-size: 13px;"><thead><tr><th colspan="2"><b>${formatDate(this.x)}</b></th></tr></thead><tbody>`;
         this.points.forEach((point) => {
@@ -174,6 +174,23 @@ function CumulativeDiagram() {
         });
         tooltip += '</tbody></table>';
         return tooltip;
+      },
+      positioner(labelWidth, labelHeight, point) {
+        const { chart } = this;
+        const { plotWidth } = chart;
+        const { plotLeft } = chart;
+        let x = point.plotX + plotLeft;
+        const y = point.plotY + chart.plotTop;
+        const padding = 30;
+
+        x += padding; // Добавляем расстояние к координате X
+
+        // Проверяем, достаточно ли места справа от точки
+        if (x + labelWidth > plotLeft + plotWidth) {
+          x -= labelWidth + 2 * padding; // Если нет, размещаем тултип слева от точки
+        }
+
+        return { x, y };
       },
     },
     series: cfdData.columns.map((column, index) => ({
@@ -195,7 +212,7 @@ function CumulativeDiagram() {
       series: {
         marker: {
           enabled: true,
-          symbol: 'diamond' 
+          symbol: 'diamond',
         },
         point: {
           events: {
@@ -229,11 +246,17 @@ function CumulativeDiagram() {
           <h3>Issues for {selectedDateDetails.date.toLocaleDateString()}:</h3>
           {Object.entries(selectedDateDetails.tasksDetails).map(([status, tasks]) => (
             <div key={status}>
-              <h4>{status} ({tasks.length})</h4>
+              <h4>
+                {status} ({tasks.length})
+              </h4>
               <ul>
                 {tasks.map((taskId) => (
                   <li key={taskId}>
-                    <a href={`${jiraDomain}/browse/${taskId}`} target="_blank" rel="noopener noreferrer">
+                    <a
+                      href={`${jiraDomain}/browse/${taskId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       {taskId}
                     </a>
                   </li>

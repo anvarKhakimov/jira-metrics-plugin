@@ -1,9 +1,5 @@
 import { useState, useEffect } from 'react';
-import {
-  prepareFilteredTasks,
-  prepareHistogramArray,
-  debugLog,
-} from '../utils/utils';
+import { prepareFilteredTasks, prepareHistogramArray, debugLog } from '../utils/utils';
 
 /**
  * useChartData - Хук для управления данными диаграммы времени выполнения задач.
@@ -70,6 +66,7 @@ export default function useChartData(boardConfig, cfdData, updateUserFilters) {
     debugLog('useChartData: Task & Column Initialization Hook');
     if (cfdData && cfdData.columns && cfdData.columns.length > 0) {
       const tasksData = {};
+      const now = new Date().getTime();
 
       // Обновление selectedColumns, если они еще не были установлены
       if (selectedColumns.length === 0) {
@@ -82,6 +79,7 @@ export default function useChartData(boardConfig, cfdData, updateUserFilters) {
           // Если это первое изменение для этой задачи, инициализируем её структуру.
           if (!tasksData[change.key]) {
             tasksData[change.key] = {
+              key: change.key,
               starts: {},
               ends: {},
             };
@@ -112,11 +110,8 @@ export default function useChartData(boardConfig, cfdData, updateUserFilters) {
         Object.entries(task.starts).forEach(([column, startTimes]) => {
           const endTimes = task.ends[column] || [];
           const totalDuration = startTimes.reduce((total, startTime, index) => {
-            const endTime = endTimes[index];
-            if (endTime) {
-              return total + (endTime - startTime);
-            }
-            return total;
+            const endTime = endTimes[index] || now;
+            return total + (endTime - startTime);
           }, 0);
 
           // Если общая продолжительность больше нуля, добавляем её к durations
@@ -131,10 +126,7 @@ export default function useChartData(boardConfig, cfdData, updateUserFilters) {
       setTasks(tasksData);
 
       // Установка фильтров из boardConfig
-      if (
-        boardConfig.quickFilterConfig &&
-        boardConfig.quickFilterConfig.quickFilters.length > 0
-      ) {
+      if (boardConfig.quickFilterConfig && boardConfig.quickFilterConfig.quickFilters.length > 0) {
         setAllFilters(boardConfig.quickFilterConfig.quickFilters);
       }
     }

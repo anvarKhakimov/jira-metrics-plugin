@@ -21,10 +21,10 @@ function Histogram({ histogramData }) {
   const completeHistogramData = Array.from(
     { length: maxDay + 1 },
     (_, day) => ({
-      days: day,
-      count: histogramData.find((data) => data.leadTime === day)?.count || 0,
+      days: day + 1,
+      count: histogramData.find((data) => data.leadTime === day + 1)?.count || 0,
     })
-  );
+  );  
 
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
