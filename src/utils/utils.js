@@ -118,7 +118,10 @@ export function calculateHistogramData(
 
     const roundedLeadTime = Math.round(leadTime);
     if (!histogramData[roundedLeadTime]) {
-      histogramData[roundedLeadTime] = { count: 0, tasks: [] };
+      histogramData[roundedLeadTime] = {
+        count: 0,
+        tasks: [],
+      };
     }
     histogramData[roundedLeadTime].count += 1;
     histogramData[roundedLeadTime].tasks.push(taskKey);
@@ -155,7 +158,6 @@ export function filterTaskByTimeAndColumns(
   timeframeTo
 ) {
   return selectedColumns.some((columnName) => {
-    console.log('filterTaskByTimeAndColumns columnName', columnName);
     const columnIndex = getColumnIndexByName(columns, columnName);
     const endTimes = task.ends[columnIndex] || [];
 
@@ -167,36 +169,20 @@ export function filterTaskByTimeAndColumns(
 }
 
 export function filterTaskByTime(task, columns, timeframeFrom, timeframeTo) {
-  const lastColumnIndex = columns.length - 1; // Индекс последней колонки
-
-  // Проверяем, ограничивается ли активность задачи только первой колонкой
-  // let isOnlyInFirstColumn = true;
-  // for (let i = 1; i < columns.length; i++) {
-  //   if (task.starts[i] && task.starts[i].length > 0) {
-  //     isOnlyInFirstColumn = false;
-  //     break;
-  //   }
-  // }
+  const lastColumnIndex = columns.length - 1;
 
   return columns.slice(0, lastColumnIndex).some((column, columnIndex) => {
-    //   if (columnIndex === 0 && isOnlyInFirstColumn) {
-    //     return false; // Игнорируем задачи, которые только в первой колонке
-    //   }
-
     const endTimes = task.ends[columnIndex] || [];
     const startTimes = task.starts[columnIndex] || [];
 
-    for (let index = 0; index < startTimes.length; index++) {
+    for (let index = 0; index < startTimes.length; index += 1) {
       const startDate = new Date(parseInt(startTimes[index], 10)).toISOString().split('T')[0];
       const endDate = endTimes[index]
         ? new Date(parseInt(endTimes[index], 10)).toISOString().split('T')[0]
         : timeframeTo;
 
       if (startDate <= timeframeTo && endDate >= timeframeFrom) {
-        console.log(
-          `"${task.key}" in column "${column.name}" matches criteria: Start Date = ${startDate}, End Date = ${endDate}`
-        );
-        return true; // Задача попадает в заданный временной интервал
+        return true;
       }
     }
 
@@ -224,7 +210,6 @@ export function filterTaskByTime(task, columns, timeframeFrom, timeframeTo) {
  * }
  */
 export function prepareFilteredTasks(tasks, columns, selectedColumns, timeframeFrom, timeframeTo) {
-  console.log('prepareFilteredTasks Start >>', tasks);
   return Object.entries(tasks).reduce((acc, [taskKey, taskDetails]) => {
     if (filterTaskByTime(taskDetails, columns, timeframeFrom, timeframeTo)) {
       const selectedColumnIndices = selectedColumns.map((columnName) =>
@@ -270,7 +255,10 @@ export function prepareHistogramArray(filteredTasks, resolution) {
 
     if (roundedLeadTime > 0) {
       if (!localHistogramData[roundedLeadTime]) {
-        localHistogramData[roundedLeadTime] = { count: 0, tasks: [] };
+        localHistogramData[roundedLeadTime] = {
+          count: 0,
+          tasks: [],
+        };
       }
       localHistogramData[roundedLeadTime].count += 1;
       localHistogramData[roundedLeadTime].tasks.push(taskId); // Добавляем идентификатор задачи

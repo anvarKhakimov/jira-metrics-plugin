@@ -1,9 +1,5 @@
 import { useState, useEffect } from 'react';
-import {
-  prepareFilteredTasks,
-  prepareHistogramArray,
-  debugLog,
-} from '../utils/utils';
+import { prepareFilteredTasks, prepareHistogramArray, debugLog } from '../utils/utils';
 
 /**
  * useChartData - Хук для управления данными диаграммы времени выполнения задач.
@@ -130,10 +126,7 @@ export default function useChartData(boardConfig, cfdData, updateUserFilters) {
       setTasks(tasksData);
 
       // Установка фильтров из boardConfig
-      if (
-        boardConfig.quickFilterConfig &&
-        boardConfig.quickFilterConfig.quickFilters.length > 0
-      ) {
+      if (boardConfig.quickFilterConfig && boardConfig.quickFilterConfig.quickFilters.length > 0) {
         setAllFilters(boardConfig.quickFilterConfig.quickFilters);
       }
     }
@@ -151,11 +144,7 @@ export default function useChartData(boardConfig, cfdData, updateUserFilters) {
         timeframeTo
       );
 
-      console.log('prepareFilteredTasks Finish >>', filteredTasks)
-
       const histogramArray = prepareHistogramArray(filteredTasks, resolution);
-
-      console.log("histogramArray", histogramArray)
 
       setDisplayedTasks(filteredTasks);
       setHistogramData(histogramArray);

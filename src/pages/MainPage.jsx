@@ -7,7 +7,6 @@ import FullScreenLoader from '../components/FullScreenLoader';
 import PredictabilityChart from '../components/PredictabilityChart/PredictabilityChart';
 import TasksTable from '../components/TasksTable/TasksTable';
 import CumulativeDiagram from '../components/CumulativeDiagram/CumulativeDiagram';
-import ControlChart2 from '../components/ControlChart/ControlChart2'
 import { sendPageViewEvent } from '../utils/google-analytics';
 import { isDebug } from '../utils/utils';
 
@@ -67,7 +66,6 @@ export default function MainPage() {
           <Tab label="CFD" />
           <Tab label="Predictability" />
           <Tab label="Tasks Table" />
-          <Tab label="Control Chart" />
         </Tabs>
       </AppBar>
       {boardConfig && boardConfig.name && (
@@ -88,9 +86,6 @@ export default function MainPage() {
       </TabPanel>
       <TabPanel value={value} index={3}>
         <TasksTable />
-      </TabPanel>
-      <TabPanel value={value} index={4}>
-        <ControlChart2 />
       </TabPanel>
     </ChartDataProvider>
   );
