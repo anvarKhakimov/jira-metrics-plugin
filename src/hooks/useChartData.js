@@ -70,6 +70,7 @@ export default function useChartData(boardConfig, cfdData, updateUserFilters) {
     debugLog('useChartData: Task & Column Initialization Hook');
     if (cfdData && cfdData.columns && cfdData.columns.length > 0) {
       const tasksData = {};
+      const now = new Date().getTime();
 
       // Обновление selectedColumns, если они еще не были установлены
       if (selectedColumns.length === 0) {
@@ -82,6 +83,7 @@ export default function useChartData(boardConfig, cfdData, updateUserFilters) {
           // Если это первое изменение для этой задачи, инициализируем её структуру.
           if (!tasksData[change.key]) {
             tasksData[change.key] = {
+              key: change.key,
               starts: {},
               ends: {},
             };
@@ -112,11 +114,8 @@ export default function useChartData(boardConfig, cfdData, updateUserFilters) {
         Object.entries(task.starts).forEach(([column, startTimes]) => {
           const endTimes = task.ends[column] || [];
           const totalDuration = startTimes.reduce((total, startTime, index) => {
-            const endTime = endTimes[index];
-            if (endTime) {
-              return total + (endTime - startTime);
-            }
-            return total;
+            const endTime = endTimes[index] || now;
+            return total + (endTime - startTime);
           }, 0);
 
           // Если общая продолжительность больше нуля, добавляем её к durations
@@ -152,7 +151,11 @@ export default function useChartData(boardConfig, cfdData, updateUserFilters) {
         timeframeTo
       );
 
+      console.log('prepareFilteredTasks Finish >>', filteredTasks)
+
       const histogramArray = prepareHistogramArray(filteredTasks, resolution);
+
+      console.log("histogramArray", histogramArray)
 
       setDisplayedTasks(filteredTasks);
       setHistogramData(histogramArray);

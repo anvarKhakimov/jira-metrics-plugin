@@ -52,14 +52,10 @@ export function durationToReadableFormat(milliseconds) {
 
   let remainingMilliseconds = milliseconds;
 
-  const months = Math.floor(
-    remainingMilliseconds / (DAYS_PER_MONTH * MILLISECONDS_PER_DAY)
-  );
+  const months = Math.floor(remainingMilliseconds / (DAYS_PER_MONTH * MILLISECONDS_PER_DAY));
   remainingMilliseconds -= months * DAYS_PER_MONTH * MILLISECONDS_PER_DAY;
 
-  const weeks = Math.floor(
-    remainingMilliseconds / (DAYS_PER_WEEK * MILLISECONDS_PER_DAY)
-  );
+  const weeks = Math.floor(remainingMilliseconds / (DAYS_PER_WEEK * MILLISECONDS_PER_DAY));
   remainingMilliseconds -= weeks * DAYS_PER_WEEK * MILLISECONDS_PER_DAY;
 
   const days = Math.floor(remainingMilliseconds / MILLISECONDS_PER_DAY);
@@ -159,6 +155,7 @@ export function filterTaskByTimeAndColumns(
   timeframeTo
 ) {
   return selectedColumns.some((columnName) => {
+    console.log('filterTaskByTimeAndColumns columnName', columnName);
     const columnIndex = getColumnIndexByName(columns, columnName);
     const endTimes = task.ends[columnIndex] || [];
 
@@ -166,6 +163,44 @@ export function filterTaskByTimeAndColumns(
       const date = new Date(parseInt(endTime, 10)).toISOString().split('T')[0];
       return date >= timeframeFrom && date <= timeframeTo;
     });
+  });
+}
+
+export function filterTaskByTime(task, columns, timeframeFrom, timeframeTo) {
+  const lastColumnIndex = columns.length - 1; // Индекс последней колонки
+
+  // Проверяем, ограничивается ли активность задачи только первой колонкой
+  // let isOnlyInFirstColumn = true;
+  // for (let i = 1; i < columns.length; i++) {
+  //   if (task.starts[i] && task.starts[i].length > 0) {
+  //     isOnlyInFirstColumn = false;
+  //     break;
+  //   }
+  // }
+
+  return columns.slice(0, lastColumnIndex).some((column, columnIndex) => {
+    //   if (columnIndex === 0 && isOnlyInFirstColumn) {
+    //     return false; // Игнорируем задачи, которые только в первой колонке
+    //   }
+
+    const endTimes = task.ends[columnIndex] || [];
+    const startTimes = task.starts[columnIndex] || [];
+
+    for (let index = 0; index < startTimes.length; index++) {
+      const startDate = new Date(parseInt(startTimes[index], 10)).toISOString().split('T')[0];
+      const endDate = endTimes[index]
+        ? new Date(parseInt(endTimes[index], 10)).toISOString().split('T')[0]
+        : timeframeTo;
+
+      if (startDate <= timeframeTo && endDate >= timeframeFrom) {
+        console.log(
+          `"${task.key}" in column "${column.name}" matches criteria: Start Date = ${startDate}, End Date = ${endDate}`
+        );
+        return true; // Задача попадает в заданный временной интервал
+      }
+    }
+
+    return false;
   });
 }
 
@@ -188,23 +223,10 @@ export function filterTaskByTimeAndColumns(
  *   ...
  * }
  */
-export function prepareFilteredTasks(
-  tasks,
-  columns,
-  selectedColumns,
-  timeframeFrom,
-  timeframeTo
-) {
+export function prepareFilteredTasks(tasks, columns, selectedColumns, timeframeFrom, timeframeTo) {
+  console.log('prepareFilteredTasks Start >>', tasks);
   return Object.entries(tasks).reduce((acc, [taskKey, taskDetails]) => {
-    if (
-      filterTaskByTimeAndColumns(
-        taskDetails,
-        columns,
-        selectedColumns,
-        timeframeFrom,
-        timeframeTo
-      )
-    ) {
+    if (filterTaskByTime(taskDetails, columns, timeframeFrom, timeframeTo)) {
       const selectedColumnIndices = selectedColumns.map((columnName) =>
         getColumnIndexByName(columns, columnName)
       );
@@ -246,11 +268,13 @@ export function prepareHistogramArray(filteredTasks, resolution) {
     const leadTime = convertTimeToResolution(taskDetails.leadTime, resolution);
     const roundedLeadTime = Math.round(leadTime);
 
-    if (!localHistogramData[roundedLeadTime]) {
-      localHistogramData[roundedLeadTime] = { count: 0, tasks: [] };
+    if (roundedLeadTime > 0) {
+      if (!localHistogramData[roundedLeadTime]) {
+        localHistogramData[roundedLeadTime] = { count: 0, tasks: [] };
+      }
+      localHistogramData[roundedLeadTime].count += 1;
+      localHistogramData[roundedLeadTime].tasks.push(taskId); // Добавляем идентификатор задачи
     }
-    localHistogramData[roundedLeadTime].count += 1;
-    localHistogramData[roundedLeadTime].tasks.push(taskId); // Добавляем идентификатор задачи
   });
 
   return Object.entries(localHistogramData).map(([leadTime, data]) => ({
