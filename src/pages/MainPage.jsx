@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { AppBar, Tabs, Tab, Box, Typography } from '@mui/material';
 import { useJiraDataContext } from '../contexts/JiraDataContext';
 import { ChartDataProvider } from '../contexts/ChartDataContext';
@@ -11,10 +12,15 @@ import { sendPageViewEvent } from '../utils/google-analytics';
 import { isDebug } from '../utils/utils';
 
 function TabPanel(props) {
-  const { children, value, index } = props;
-
+  const { children, value, index, ...other } = props;
   return (
-    <div role="tabpanel" hidden={value !== index}>
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
       {value === index && <Box p={3}>{children}</Box>}
     </div>
   );
@@ -22,13 +28,24 @@ function TabPanel(props) {
 
 export default function MainPage() {
   const { isLoading, boardConfig, cfdData, updateUserFilters } = useJiraDataContext();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabNames = ['leadtime', 'cfd', 'predictability', 'tasks'];
+  const tabParam = searchParams.get('tab');
+  const [value, setValue] = useState(Math.max(tabNames.indexOf(tabParam), 0));
 
-  const [value, setValue] = React.useState(0);
+  useEffect(() => {
+    // Создаем новый объект URLSearchParams для перестройки параметров с tab на первом месте
+    const newSearchParams = new URLSearchParams();
+    newSearchParams.set('tab', tabNames[value]); // Добавляем параметр tab первым
+    searchParams.forEach((val, key) => {
+      if (key !== 'tab') newSearchParams.set(key, val); // Добавляем остальные параметры
+    });
+    setSearchParams(newSearchParams, { replace: true });
+  }, [value, searchParams, setSearchParams]);
 
   const handleChange = async (event, newValue) => {
     setValue(newValue);
 
-    // Отправляем событие в зависимости от выбранной вкладки
     switch (newValue) {
       case 0:
         await sendPageViewEvent('Lead Time Histogram', 'leadTime');
@@ -43,10 +60,13 @@ export default function MainPage() {
         await sendPageViewEvent('Tasks Table', 'tasks');
         break;
       default:
-        // Действие по умолчанию, если newValue не соответствует ни одному из случаев
         break;
     }
   };
+
+  if (!cfdData || !cfdData.columns) {
+    return <FullScreenLoader isLoading />;
+  }
 
   return (
     <ChartDataProvider
@@ -61,7 +81,7 @@ export default function MainPage() {
         style={{ backgroundColor: isDebug ? '#fac7c7' : undefined }}
         elevation={0}
       >
-        <Tabs value={value} onChange={handleChange}>
+        <Tabs value={value} onChange={handleChange} aria-label="simple tabs example">
           <Tab label="Lead Time" />
           <Tab label="CFD" />
           <Tab label="Predictability" />

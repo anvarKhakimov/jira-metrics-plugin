@@ -1,62 +1,41 @@
-import React, {
-  createContext,
-  useState,
-  useContext,
-  useEffect,
-  useCallback,
-  useMemo,
-} from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useGlobalSettings } from './GlobalSettingsContext';
 import { fetchBoardConfig, fetchCFDData } from '../services/jiraAPI';
-import { debugLog } from '../utils/utils';
+import { debugError, debugLog } from '../utils/utils';
 
 const JiraDataContext = createContext();
 
+function useQuery() {
+  return new URLSearchParams(useLocation().search);
+}
+
 export function JiraDataProvider({ children }) {
+  const { settings, updateSettings, jiraBaseUrl, setJiraBaseUrl, rapidView, setRapidView } =
+    useGlobalSettings();
   const [isLoading, setIsLoading] = useState(false);
-  const [jiraBaseUrl, setJiraBaseUrl] = useState('');
-  const [rapidView, setRapidView] = useState('');
+  // const [jiraBaseUrl, setJiraBaseUrl] = useState('');
+  // const [rapidView, setRapidView] = useState('');
   const [boardConfig, setBoardConfig] = useState(null);
   const [cfdData, setCFDData] = useState(null);
   const [filters, setFilters] = useState([]);
   const [allSwimlanes, setAllSwimlanes] = useState([]);
   const [activeSwimlanes, setActiveSwimlanes] = useState([]);
 
+  const query = useQuery();
+  const hostname = query.get('host');
+  const baseUrl = `https://${hostname}`;
+  const rapidViewParam = query.get('rapidView');
+
   useEffect(() => {
-    debugLog('Retrieving from sessionStorage');
-    const storedData = JSON.parse(sessionStorage.getItem('jira-data-graph'));
-
-    if (storedData) {
-      debugLog('Data retrieved from sessionStorage: ', storedData);
-      debugLog('SessionStorage jiraOriginalUrl:', storedData.jiraOriginalUrl);
-      debugLog('SessionStorage rapidView:', storedData.rapidView);
-      if (storedData.jiraOriginalUrl)
-        setJiraBaseUrl(storedData.jiraOriginalUrl);
-      if (storedData.rapidView) setRapidView(storedData.rapidView);
-      debugLog('Stored jiraOriginalUrl & rapidView in state');
+    if (hostname !== '' && rapidViewParam !== '') {
+      setJiraBaseUrl(baseUrl);
+      setRapidView(rapidViewParam);
+      console.log('Не пусто', { hostname, rapidViewParam });
     } else {
-      debugLog('Requesting from background.js if no sessionStorage data');
-      chrome.runtime.sendMessage(
-        { type: 'getJiraOriginalUrlForTab' },
-        (response) => {
-          debugLog('Response from background.js:', response);
-          if (response && response.jiraOriginalUrl) {
-            const url = new URL(response.jiraOriginalUrl);
-            const rapidViewParam = url.searchParams.get('rapidView');
-            sessionStorage.setItem(
-              'jira-data-graph',
-              JSON.stringify({
-                jiraOriginalUrl: response.jiraOriginalUrl,
-                rapidView: rapidViewParam,
-              })
-            );
-
-            setJiraBaseUrl(response.jiraOriginalUrl);
-            if (rapidViewParam) {
-              setRapidView(rapidViewParam);
-            }
-          }
-        }
-      );
+      // @todo дописать показ ошибки
+      setIsLoading(true);
+      console.error('Hostname or rapidView are empty.', { hostname, rapidViewParam });
     }
   }, []);
 
@@ -166,11 +145,7 @@ export function JiraDataProvider({ children }) {
     ]
   );
 
-  return (
-    <JiraDataContext.Provider value={contextValue}>
-      {children}
-    </JiraDataContext.Provider>
-  );
+  return <JiraDataContext.Provider value={contextValue}>{children}</JiraDataContext.Provider>;
 }
 
 export const useJiraDataContext = () => useContext(JiraDataContext);

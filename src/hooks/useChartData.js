@@ -67,6 +67,7 @@ export default function useChartData(boardConfig, cfdData, updateUserFilters) {
     if (cfdData && cfdData.columns && cfdData.columns.length > 0) {
       const tasksData = {};
       const now = new Date().getTime();
+      const lastColumnIndexString = String(cfdData.columns.length - 1);
 
       // Обновление selectedColumns, если они еще не были установлены
       if (selectedColumns.length === 0) {
@@ -103,20 +104,29 @@ export default function useChartData(boardConfig, cfdData, updateUserFilters) {
         });
       });
 
-      // Расчет общей продолжительности нахождения задачи в каждой колонке.
+      // Расчет общей продолжительности нахождения задачи в каждой колонке с учетом новой логики
       Object.values(tasksData).forEach((task) => {
-        // eslint-disable-next-line no-param-reassign
         task.durations = {};
         Object.entries(task.starts).forEach(([column, startTimes]) => {
           const endTimes = task.ends[column] || [];
-          const totalDuration = startTimes.reduce((total, startTime, index) => {
-            const endTime = endTimes[index] || now;
-            return total + (endTime - startTime);
-          }, 0);
 
-          // Если общая продолжительность больше нуля, добавляем её к durations
+          let totalDuration = 0;
+          startTimes.forEach((startTime, index) => {
+            let endTime = endTimes[index] || now;
+
+            // Для последней колонки проверяем, есть ли фактическое время окончания
+            if (column === lastColumnIndexString) {
+              // Если это последняя запись в startTimes и нет соответствующего endTime (переход в другую колонку),
+              // не учитываем это время как часть durations для последней колонки
+              if (index === startTimes.length - 1 && !endTimes[index]) {
+                endTime = startTime; // Это исключает последний период из подсчета
+              }
+            }
+
+            totalDuration += endTime - startTime;
+          });
+
           if (totalDuration > 0) {
-            // eslint-disable-next-line no-param-reassign
             task.durations[column] = totalDuration;
           }
         });
@@ -151,6 +161,32 @@ export default function useChartData(boardConfig, cfdData, updateUserFilters) {
       setIsLoading(false);
     }
   }, [cfdData, tasks, timeframeFrom, timeframeTo, selectedColumns, resolution]);
+
+  useEffect(() => {
+    window.debugData = {
+      tasks,
+      displayedTasks,
+      histogramData,
+      selectedColumns,
+      timeframeFrom,
+      timeframeTo,
+      isLoading,
+      allFilters,
+      activeFilters,
+      resolution,
+    };
+  }, [
+    tasks,
+    displayedTasks,
+    histogramData,
+    selectedColumns,
+    timeframeFrom,
+    timeframeTo,
+    isLoading,
+    allFilters,
+    activeFilters,
+    resolution,
+  ]);
 
   return {
     tasks,

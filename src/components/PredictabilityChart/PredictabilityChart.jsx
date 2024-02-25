@@ -52,23 +52,7 @@ function addTrendData(chartData) {
 
 function PredictabilityChart() {
   const { cfdData } = useJiraDataContext();
-  const {
-    tasks,
-    selectedColumns,
-    setSelectedColumns,
-    timeframeFrom,
-    setTimeframeFrom,
-    timeframeTo,
-    setTimeframeTo,
-    allFilters,
-    activeFilters,
-    toggleFilter,
-    allSwimlanes,
-    activeSwimlanes,
-    updateActiveSwimlanes,
-    resolution,
-    setResolution,
-  } = useChartDataContext();
+  const { tasks, selectedColumns, resolution } = useChartDataContext();
   const [details, setDetails] = useState({});
   const [showCalculations, setShowCalculations] = useState(false);
   const columns = cfdData ? cfdData.columns : [];
@@ -83,16 +67,8 @@ function PredictabilityChart() {
     const currentDate = new Date();
 
     for (let i = 0; i < 6; i += 1) {
-      const monthDate = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth() - i,
-        1
-      );
-      const nextMonthDate = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth() - i + 1,
-        1
-      );
+      const monthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+      const nextMonthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i + 1, 1);
 
       const dataTimeframeFrom = monthDate.toISOString().split('T')[0];
       const dataTimeframeTo = nextMonthDate.toISOString().split('T')[0];
@@ -109,9 +85,7 @@ function PredictabilityChart() {
       // Создание histogramArray с использованием filteredTasks
       const histogramArray = prepareHistogramArray(filteredTasks, resolution);
 
-      const leadTimes = histogramArray.flatMap((item) =>
-        Array(item.count).fill(item.leadTime)
-      );
+      const leadTimes = histogramArray.flatMap((item) => Array(item.count).fill(item.leadTime));
       const taskIds = histogramArray.map((item) => item.tasks).flat(); // Собираем ID задач
       const p95 = calculatePercentile(leadTimes, 95);
       const p50 = calculatePercentile(leadTimes, 50);
@@ -139,9 +113,7 @@ function PredictabilityChart() {
 
     // Отфильтровываем месяцы без данных (где p95 или p50 равны NaN или Infinity)
     const filteredChartData = chartData.filter(
-      (item) =>
-        Number.isFinite(item.predictability) &&
-        !Number.isNaN(item.predictability)
+      (item) => Number.isFinite(item.predictability) && !Number.isNaN(item.predictability)
     );
 
     return addTrendData(
@@ -157,10 +129,7 @@ function PredictabilityChart() {
       <h3>Predictability Chart (95% / 50%)</h3>
 
       <ResponsiveContainer width="100%" height={400}>
-        <LineChart
-          data={data}
-          margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
-        >
+        <LineChart data={data} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="name" />
           <YAxis
@@ -188,25 +157,7 @@ function PredictabilityChart() {
 
       <br />
 
-      <Filters
-        selectedColumns={selectedColumns}
-        setSelectedColumns={setSelectedColumns}
-        columns={columns}
-        timeframeFrom={timeframeFrom}
-        setTimeframeFrom={setTimeframeFrom}
-        timeframeTo={timeframeTo}
-        setTimeframeTo={setTimeframeTo}
-        allFilters={allFilters}
-        activeFilters={activeFilters}
-        toggleFilter={toggleFilter}
-        setResolution={setResolution}
-        resolution={resolution}
-        allSwimlanes={allSwimlanes}
-        activeSwimlanes={activeSwimlanes}
-        updateActiveSwimlanes={updateActiveSwimlanes}
-        showResolution
-        showTimeframe={false}
-      />
+      <Filters showTimeframe={false} />
 
       <br />
 

@@ -18,9 +18,12 @@ const formatDate = (timestamp) => {
 function CumulativeDiagram() {
   const [colors, setColors] = useState([]);
   const [selectedDateDetails, setSelectedDateDetails] = useState(null);
+  const [resetLastColumnCount, setResetLastColumnCount] = useState(true);
   const { cfdData, jiraBaseUrl } = useJiraDataContext();
-  const { displayedTasks, timeframeFrom, timeframeTo } = useChartDataContext();
+  const { tasks, timeframeFrom, timeframeTo } = useChartDataContext();
   const jiraDomain = new URL(jiraBaseUrl).origin;
+
+  const displayedTasks = tasks;
 
   const handleChartClick = (data) => {
     if (data && data.tasksDetails) {
@@ -85,35 +88,41 @@ function CumulativeDiagram() {
     const chartData = timeframeDates.map((date) => {
       const dataPoint = { date: date.getTime(), tasksDetails: {} };
 
-      cfdData.columns.forEach((column) => {
+      cfdData.columns.forEach((column, columnIndex) => {
         // Инициализация счетчика задач для каждой колонки
         dataPoint[column.name] = 0;
         dataPoint.tasksDetails[column.name] = [];
 
         Object.keys(displayedTasks).forEach((taskId) => {
           const task = displayedTasks[taskId];
+          const phaseStarts = task.starts[columnIndex];
+          const phaseEnds = task.ends[columnIndex];
 
-          cfdData.columns.forEach((innerColumn, index) => {
-            if (column.name !== innerColumn.name) return; // Пропускаем, если не совпадают названия колонок
+          if (phaseStarts) {
+            phaseStarts.forEach((startTimestamp, timestampIndex) => {
+              const startDate = new Date(parseInt(startTimestamp, 10));
+              const endDate =
+                phaseEnds && phaseEnds[timestampIndex]
+                  ? new Date(parseInt(phaseEnds[timestampIndex], 10))
+                  : new Date();
 
-            // Проверка, находится ли задача в текущей колонке на данную дату
-            const phaseStarts = task.starts[index];
-            const phaseEnds = task.ends[index];
-            if (phaseStarts) {
-              phaseStarts.forEach((startTimestamp, timestampIndex) => {
-                const startDate = new Date(parseInt(startTimestamp, 10));
-                const endDate =
-                  phaseEnds && phaseEnds[timestampIndex]
-                    ? new Date(parseInt(phaseEnds[timestampIndex], 10))
-                    : new Date(); // Если нет времени окончания, считаем, что задача еще в колонке
-
-                if (date >= startDate && date <= endDate) {
+              // Изменяем логику для последней колонки в зависимости от resetLastColumnCount
+              if (columnIndex === cfdData.columns.length - 1 && resetLastColumnCount) {
+                if (
+                  startDate >= adjustedTimeframeFrom &&
+                  startDate <= new Date(timeframeTo) &&
+                  date >= startDate &&
+                  date <= endDate
+                ) {
                   dataPoint[column.name] += 1;
                   dataPoint.tasksDetails[column.name].push(taskId);
                 }
-              });
-            }
-          });
+              } else if (date >= startDate && date <= endDate) {
+                dataPoint[column.name] += 1;
+                dataPoint.tasksDetails[column.name].push(taskId);
+              }
+            });
+          }
         });
       });
 
@@ -169,29 +178,36 @@ function CumulativeDiagram() {
       useHTML: true,
       formatter() {
         let tooltip = `<table style="font-size: 13px;"><thead><tr><th colspan="2"><b>${formatDate(this.x)}</b></th></tr></thead><tbody>`;
+        let total = 0;
+
         this.points.forEach((point) => {
           tooltip += `<tr><td><span style="color:${point.series.color}">●</span> ${point.series.name}</td><td style="text-align: right;"><b>${point.y}</b></td></tr>`;
+          total += point.y;
         });
+
+        tooltip +=
+          '<tr><td colspan="2"><hr style="margin: 2px 0; border: none; height: 1px; background: #ccc;"></td></tr>';
+        tooltip += `<tr><td><span style="color:#fff">●</span><b>TOTAL</b></td><td style="text-align: right;"><b>${total}</b></td></tr>`;
         tooltip += '</tbody></table>';
         return tooltip;
       },
-      positioner(labelWidth, labelHeight, point) {
-        const { chart } = this;
-        const { plotWidth } = chart;
-        const { plotLeft } = chart;
-        let x = point.plotX + plotLeft;
-        const y = point.plotY + chart.plotTop;
-        const padding = 30;
+      // positioner(labelWidth, labelHeight, point) {
+      //   const { chart } = this;
+      //   const { plotWidth } = chart;
+      //   const { plotLeft } = chart;
+      //   let x = point.plotX + plotLeft;
+      //   const y = point.plotY + chart.plotTop;
+      //   const padding = 30;
 
-        x += padding; // Добавляем расстояние к координате X
+      //   x += padding; // Добавляем расстояние к координате X
 
-        // Проверяем, достаточно ли места справа от точки
-        if (x + labelWidth > plotLeft + plotWidth) {
-          x -= labelWidth + 2 * padding; // Если нет, размещаем тултип слева от точки
-        }
+      //   // Проверяем, достаточно ли места справа от точки
+      //   if (x + labelWidth > plotLeft + plotWidth) {
+      //     x -= labelWidth + 2 * padding; // Если нет, размещаем тултип слева от точки
+      //   }
 
-        return { x, y };
-      },
+      //   return { x, y };
+      // },
     },
     series: cfdData.columns.map((column, index) => ({
       name: column.name,
@@ -239,7 +255,7 @@ function CumulativeDiagram() {
       />
       <br />
 
-      <Filters showResolution={false} />
+      <Filters showResolution={false} showColumns={false} />
       <br />
       {selectedDateDetails && (
         <div>

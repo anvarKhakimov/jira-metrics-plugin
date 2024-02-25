@@ -39,7 +39,7 @@ export function convertTimeToResolution(timeInMilliseconds, resolution) {
  * durationToReadableFormat(6480000000); // Возвращает: '2 months, 2 weeks, 3 days, 4 hours, 5 minutes, 6 seconds'
  */
 
-export function durationToReadableFormat(milliseconds) {
+export function durationToReadableFormat(milliseconds, format = 'default') {
   const DAYS_PER_WEEK = 7;
   const DAYS_PER_MONTH = 30; // Примерное значение
   const HOURS_PER_DAY = 24;
@@ -69,20 +69,33 @@ export function durationToReadableFormat(milliseconds) {
 
   const seconds = Math.floor(remainingMilliseconds / MILLISECONDS_PER_SECOND);
 
-  const result = [];
+  // Пересчет общего количества дней для формата "в днях"
+  const totalDays = months * DAYS_PER_MONTH + weeks * DAYS_PER_WEEK + days;
+  // Пересчет общего количества недель для формата "в неделях"
+  const totalWeeks = (months * DAYS_PER_MONTH + weeks * DAYS_PER_WEEK + days) / DAYS_PER_WEEK;
 
-  if (months) result.push(`${months} month${months > 1 ? 's' : ''}`);
-  if (weeks) result.push(`${weeks} week${weeks > 1 ? 's' : ''}`);
-  if (days) result.push(`${days} day${days > 1 ? 's' : ''}`);
-  if (hours) result.push(`${hours} hour${hours > 1 ? 's' : ''}`);
-  if (minutes) result.push(`${minutes} minute${minutes > 1 ? 's' : ''}`);
-  if (seconds) result.push(`${seconds} second${seconds > 1 ? 's' : ''}`);
-
-  if (result.length === 0) {
-    result.push('Less than a second');
+  switch (format) {
+    case 'hours':
+      return `${Math.floor(milliseconds / MILLISECONDS_PER_HOUR)} hour${Math.floor(milliseconds / MILLISECONDS_PER_HOUR) !== 1 ? 's' : ''}`;
+    case 'days':
+      return `${totalDays} day${totalDays !== 1 ? 's' : ''}`;
+    case 'weeks':
+      return `${totalWeeks.toFixed(0)} week${totalWeeks.toFixed(0) !== '1.00' ? 's' : ''}`;
+    case 'timestamp':
+      return `${milliseconds}`;
+    default:
+      const result = [];
+      if (months) result.push(`${months} month${months > 1 ? 's' : ''}`);
+      if (weeks) result.push(`${weeks} week${weeks > 1 ? 's' : ''}`);
+      if (days) result.push(`${days} day${days > 1 ? 's' : ''}`);
+      if (hours) result.push(`${hours} hour${hours > 1 ? 's' : ''}`);
+      if (minutes) result.push(`${minutes} minute${minutes > 1 ? 's' : ''}`);
+      if (seconds) result.push(`${seconds} second${seconds > 1 ? 's' : ''}`);
+      if (result.length === 0) {
+        return 'Less than a second';
+      }
+      return result.join(', ');
   }
-
-  return result.join(', ');
 }
 
 /**

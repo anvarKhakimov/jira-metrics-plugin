@@ -1,82 +1,66 @@
-import React, { useState } from "react";
-import TextField from "@mui/material/TextField";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import { sendAnalyticsEvent } from "../../utils/google-analytics";
+import React, { useState } from 'react';
+
+import TextField from '@mui/material/TextField';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import { sendAnalyticsEvent } from '../../utils/google-analytics';
 
 function TimeframePicker({
   timeframeFrom,
   setTimeframeFrom,
   timeframeTo,
   setTimeframeTo,
+  settings,
+  updateSettings,
 }) {
-  const [selectedTimeframe, setSelectedTimeframe] = useState("custom");
+  //const [selectedTimeframe, setSelectedTimeframe] = useState('custom');
+  const selectedTimeframe = settings.selectedTimeframe || 'default';
 
   const updateDateFields = (timeframe) => {
     const today = new Date();
-    let newFrom; 
+    let newFrom;
 
     switch (timeframe) {
-      case "past_week":
-        newFrom = new Date(
-          today.getFullYear(),
-          today.getMonth(),
-          today.getDate() - 7
-        );
+      case 'past_week':
+        newFrom = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
         break;
-      case "past_2_weeks":
-        newFrom = new Date(
-          today.getFullYear(),
-          today.getMonth(),
-          today.getDate() - 14
-        );
+      case 'past_2_weeks':
+        newFrom = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 14);
         break;
-      case "past_month":
-        newFrom = new Date(
-          today.getFullYear(),
-          today.getMonth() - 1,
-          today.getDate()
-        );
+      case 'past_month':
+        newFrom = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
         break;
-      case "past_3_months":
-        newFrom = new Date(
-          today.getFullYear(),
-          today.getMonth() - 3,
-          today.getDate()
-        );
+      case 'past_3_months':
+        newFrom = new Date(today.getFullYear(), today.getMonth() - 3, today.getDate());
         break;
-      case "past_6_months":
-        newFrom = new Date(
-          today.getFullYear(),
-          today.getMonth() - 6,
-          today.getDate()
-        );
+      case 'past_6_months':
+        newFrom = new Date(today.getFullYear(), today.getMonth() - 6, today.getDate());
         break;
-      case "all_time":
+      case 'all_time':
         // Set to a significantly old date or handle differently based on your logic
         newFrom = new Date(2000, 0, 1);
         break;
-      case "custom":
+      case 'custom':
         return; // Do not change dates when custom is selected
       default:
         return;
     }
 
     const newTo = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    setTimeframeFrom(newFrom.toISOString().split("T")[0]);
-    setTimeframeTo(newTo.toISOString().split("T")[0]);
+    setTimeframeFrom(newFrom.toISOString().split('T')[0]);
+    setTimeframeTo(newTo.toISOString().split('T')[0]);
   };
 
   const handleTimeframeSelection = (event) => {
     const newTimeframe = event.target.value;
-    setSelectedTimeframe(newTimeframe);
+    updateSettings({ selectedTimeframe: newTimeframe });
     updateDateFields(newTimeframe);
 
-    sendAnalyticsEvent("timeframe_interacted", {
-      action: "Select",
-      label: "Timeframe Selected",
+    sendAnalyticsEvent('timeframe_interacted', {
+      action: 'Select',
+      label: 'Timeframe Selected',
       value: newTimeframe,
     });
   };
@@ -84,22 +68,23 @@ function TimeframePicker({
   const handleTimeframeFromChange = (event) => {
     const newTimeframeFrom = event.target.value;
     setTimeframeFrom(newTimeframeFrom);
-    setSelectedTimeframe("custom");
+    setSelectedTimeframe('custom');
+    updateSettings({ selectedTimeframe: 'custom' });
 
-    sendAnalyticsEvent("timeframe_interacted", {
-      action: "Change",
-      label: "Timeframe From Changed",
+    sendAnalyticsEvent('timeframe_interacted', {
+      action: 'Change',
+      label: 'Timeframe From Changed',
     });
   };
 
   const handleTimeframeToChange = (event) => {
     const newTimeframeTo = event.target.value;
     setTimeframeTo(newTimeframeTo);
-    setSelectedTimeframe("custom");
+    updateSettings({ selectedTimeframe: 'custom' });
 
-    sendAnalyticsEvent("timeframe_interacted", {
-      action: "Change",
-      label: "Timeframe To Changed",
+    sendAnalyticsEvent('timeframe_interacted', {
+      action: 'Change',
+      label: 'Timeframe To Changed',
     });
   };
 
