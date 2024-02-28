@@ -75,15 +75,19 @@ export function durationToReadableFormat(milliseconds, format = 'default') {
   const totalWeeks = (months * DAYS_PER_MONTH + weeks * DAYS_PER_WEEK + days) / DAYS_PER_WEEK;
 
   switch (format) {
-    case 'hours':
+    case 'hours': {
       return `${Math.floor(milliseconds / MILLISECONDS_PER_HOUR)} hour${Math.floor(milliseconds / MILLISECONDS_PER_HOUR) !== 1 ? 's' : ''}`;
-    case 'days':
+    }
+    case 'days': {
       return `${totalDays} day${totalDays !== 1 ? 's' : ''}`;
-    case 'weeks':
-      return `${totalWeeks.toFixed(0)} week${totalWeeks.toFixed(0) !== '1.00' ? 's' : ''}`;
-    case 'timestamp':
+    }
+    case 'weeks': {
+      return `${totalWeeks.toFixed(0)} week${totalWeeks.toFixed(0) !== '1' ? 's' : ''}`;
+    }
+    case 'timestamp': {
       return `${milliseconds}`;
-    default:
+    }
+    default: {
       const result = [];
       if (months) result.push(`${months} month${months > 1 ? 's' : ''}`);
       if (weeks) result.push(`${weeks} week${weeks > 1 ? 's' : ''}`);
@@ -92,9 +96,10 @@ export function durationToReadableFormat(milliseconds, format = 'default') {
       if (minutes) result.push(`${minutes} minute${minutes > 1 ? 's' : ''}`);
       if (seconds) result.push(`${seconds} second${seconds > 1 ? 's' : ''}`);
       if (result.length === 0) {
-        return 'Less than a second';
+        return '0 seconds';
       }
       return result.join(', ');
+    }
   }
 }
 

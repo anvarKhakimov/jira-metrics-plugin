@@ -12,12 +12,9 @@ function TimeframePicker({
   setTimeframeFrom,
   timeframeTo,
   setTimeframeTo,
-  settings,
-  updateSettings,
+  selectedTimeframe,
+  setSelectedTimeframe,
 }) {
-  //const [selectedTimeframe, setSelectedTimeframe] = useState('custom');
-  const selectedTimeframe = settings.selectedTimeframe || 'default';
-
   const updateDateFields = (timeframe) => {
     const today = new Date();
     let newFrom;
@@ -55,7 +52,7 @@ function TimeframePicker({
 
   const handleTimeframeSelection = (event) => {
     const newTimeframe = event.target.value;
-    updateSettings({ selectedTimeframe: newTimeframe });
+    setSelectedTimeframe(newTimeframe);
     updateDateFields(newTimeframe);
 
     sendAnalyticsEvent('timeframe_interacted', {
@@ -69,7 +66,6 @@ function TimeframePicker({
     const newTimeframeFrom = event.target.value;
     setTimeframeFrom(newTimeframeFrom);
     setSelectedTimeframe('custom');
-    updateSettings({ selectedTimeframe: 'custom' });
 
     sendAnalyticsEvent('timeframe_interacted', {
       action: 'Change',
@@ -80,7 +76,7 @@ function TimeframePicker({
   const handleTimeframeToChange = (event) => {
     const newTimeframeTo = event.target.value;
     setTimeframeTo(newTimeframeTo);
-    updateSettings({ selectedTimeframe: 'custom' });
+    setSelectedTimeframe('custom');
 
     sendAnalyticsEvent('timeframe_interacted', {
       action: 'Change',

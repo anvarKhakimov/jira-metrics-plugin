@@ -14,8 +14,6 @@ export function JiraDataProvider({ children }) {
   const { settings, updateSettings, jiraBaseUrl, setJiraBaseUrl, rapidView, setRapidView } =
     useGlobalSettings();
   const [isLoading, setIsLoading] = useState(false);
-  // const [jiraBaseUrl, setJiraBaseUrl] = useState('');
-  // const [rapidView, setRapidView] = useState('');
   const [boardConfig, setBoardConfig] = useState(null);
   const [cfdData, setCFDData] = useState(null);
   const [filters, setFilters] = useState([]);
@@ -31,11 +29,10 @@ export function JiraDataProvider({ children }) {
     if (hostname !== '' && rapidViewParam !== '') {
       setJiraBaseUrl(baseUrl);
       setRapidView(rapidViewParam);
-      console.log('Не пусто', { hostname, rapidViewParam });
     } else {
       // @todo дописать показ ошибки
       setIsLoading(true);
-      console.error('Hostname or rapidView are empty.', { hostname, rapidViewParam });
+      debugError('Hostname or rapidView are empty.', { hostname, rapidViewParam });
     }
   }, []);
 

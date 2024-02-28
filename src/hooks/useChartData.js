@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useGlobalSettings } from '../contexts/GlobalSettingsContext';
 import { prepareFilteredTasks, prepareHistogramArray, debugLog } from '../utils/utils';
 
 /**
@@ -13,6 +14,7 @@ import { prepareFilteredTasks, prepareHistogramArray, debugLog } from '../utils/
  */
 
 export default function useChartData(boardConfig, cfdData, updateUserFilters) {
+  const { timeframeFrom, timeframeTo } = useGlobalSettings();
   const [tasks, setTasks] = useState({});
   const [displayedTasks, setDisplayedTasks] = useState({});
 
@@ -22,11 +24,11 @@ export default function useChartData(boardConfig, cfdData, updateUserFilters) {
   const lastMonthDate = new Date(currentDate);
   lastMonthDate.setMonth(currentDate.getMonth() - 1);
 
-  const formattedCurrentDate = currentDate.toISOString().split('T')[0];
-  const formattedLastMonthDate = lastMonthDate.toISOString().split('T')[0];
+  // const formattedCurrentDate = currentDate.toISOString().split('T')[0];
+  // const formattedLastMonthDate = lastMonthDate.toISOString().split('T')[0];
 
-  const [timeframeFrom, setTimeframeFrom] = useState(formattedLastMonthDate);
-  const [timeframeTo, setTimeframeTo] = useState(formattedCurrentDate);
+  // const [timeframeFrom, setTimeframeFrom] = useState(formattedLastMonthDate);
+  // const [timeframeTo, setTimeframeTo] = useState(formattedCurrentDate);
 
   const [selectedColumns, setSelectedColumns] = useState([]);
 
@@ -194,10 +196,6 @@ export default function useChartData(boardConfig, cfdData, updateUserFilters) {
     histogramData,
     selectedColumns,
     setSelectedColumns,
-    timeframeFrom,
-    setTimeframeFrom,
-    timeframeTo,
-    setTimeframeTo,
     isLoading,
     allFilters,
     activeFilters,

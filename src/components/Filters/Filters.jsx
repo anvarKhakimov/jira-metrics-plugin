@@ -16,17 +16,20 @@ function Filters({
   showColumns = true,
   showFilters = true,
 }) {
-  const { settings, updateSettings } = useGlobalSettings();
+  const {
+    selectedTimeframe,
+    setSelectedTimeframe,
+    timeframeFrom,
+    setTimeframeFrom,
+    timeframeTo,
+    setTimeframeTo,
+  } = useGlobalSettings();
 
   const { cfdData, allSwimlanes, activeSwimlanes, updateActiveSwimlanes } = useJiraDataContext();
 
   const {
     selectedColumns,
     setSelectedColumns,
-    timeframeFrom,
-    setTimeframeFrom,
-    timeframeTo,
-    setTimeframeTo,
     allFilters,
     activeFilters,
     toggleFilter,
@@ -47,8 +50,8 @@ function Filters({
             setTimeframeFrom={setTimeframeFrom}
             timeframeTo={timeframeTo}
             setTimeframeTo={setTimeframeTo}
-            settings={settings}
-            updateSettings={updateSettings}
+            selectedTimeframe={selectedTimeframe}
+            setSelectedTimeframe={setSelectedTimeframe}
           />
         )}
 

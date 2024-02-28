@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import { schemePaired } from 'd3-scale-chromatic';
+import { useGlobalSettings } from '../../contexts/GlobalSettingsContext';
 import { useJiraDataContext } from '../../contexts/JiraDataContext';
 import { useChartDataContext } from '../../contexts/ChartDataContext';
 import Filters from '../Filters/Filters';
@@ -19,8 +20,9 @@ function CumulativeDiagram() {
   const [colors, setColors] = useState([]);
   const [selectedDateDetails, setSelectedDateDetails] = useState(null);
   const [resetLastColumnCount, setResetLastColumnCount] = useState(true);
+  const { timeframeFrom, timeframeTo } = useGlobalSettings();
   const { cfdData, jiraBaseUrl } = useJiraDataContext();
-  const { tasks, timeframeFrom, timeframeTo } = useChartDataContext();
+  const { tasks } = useChartDataContext();
   const jiraDomain = new URL(jiraBaseUrl).origin;
 
   const displayedTasks = tasks;

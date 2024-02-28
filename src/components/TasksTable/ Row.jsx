@@ -152,7 +152,7 @@ function Row({ taskKey, task, cfdData, selectedColumns, index, dateFormat }) {
               <TableCell key={column.name} align="right">
                 <Tooltip title={column.name} placement="top" arrow>
                   <span>
-                    {columnDuration ? durationToReadableFormat(columnDuration, dateFormat) : '0'}
+                    {columnDuration ? durationToReadableFormat(columnDuration, dateFormat) : ''}
                   </span>
                 </Tooltip>
               </TableCell>
