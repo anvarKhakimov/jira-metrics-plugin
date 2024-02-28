@@ -1,11 +1,9 @@
 import React, { useEffect } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import MainPage from './pages/MainPage';
+import { GlobalSettingsProvider } from './contexts/GlobalSettingsContext';
 import { JiraDataProvider } from './contexts/JiraDataContext';
-import {
-  getOrCreateSessionId,
-  sendAnalyticsEvent,
-} from './utils/google-analytics';
+import MainPage from './pages/MainPage';
+import { getOrCreateSessionId, sendAnalyticsEvent } from './utils/google-analytics';
 
 import './styles/App.css';
 
@@ -31,9 +29,11 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      <JiraDataProvider>
-        <MainPage />
-      </JiraDataProvider>
+      <GlobalSettingsProvider>
+        <JiraDataProvider>
+          <MainPage />
+        </JiraDataProvider>
+      </GlobalSettingsProvider>
     </ThemeProvider>
   );
 }

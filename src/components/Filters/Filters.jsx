@@ -1,5 +1,6 @@
 import React from 'react';
 import Box from '@mui/material/Box';
+import { useGlobalSettings } from '../../contexts/GlobalSettingsContext';
 import { useJiraDataContext } from '../../contexts/JiraDataContext';
 import { useChartDataContext } from '../../contexts/ChartDataContext';
 import Resolution from './Resolution';
@@ -15,16 +16,20 @@ function Filters({
   showColumns = true,
   showFilters = true,
 }) {
-  const { cfdData, allSwimlanes, activeSwimlanes, updateActiveSwimlanes } =
-    useJiraDataContext();
-
   const {
-    selectedColumns,
-    setSelectedColumns,
+    selectedTimeframe,
+    setSelectedTimeframe,
     timeframeFrom,
     setTimeframeFrom,
     timeframeTo,
     setTimeframeTo,
+  } = useGlobalSettings();
+
+  const { cfdData, allSwimlanes, activeSwimlanes, updateActiveSwimlanes } = useJiraDataContext();
+
+  const {
+    selectedColumns,
+    setSelectedColumns,
     allFilters,
     activeFilters,
     toggleFilter,
@@ -36,15 +41,8 @@ function Filters({
 
   return (
     <div>
-      <Box
-        display="flex"
-        alignItems="center"
-        justifyContent="start"
-        flexWrap="wrap"
-      >
-        {showResolution && (
-          <Resolution setResolution={setResolution} resolution={resolution} />
-        )}
+      <Box display="flex" alignItems="center" justifyContent="start" flexWrap="wrap">
+        {showResolution && <Resolution setResolution={setResolution} resolution={resolution} />}
 
         {showTimeframe && (
           <TimeframePicker
@@ -52,6 +50,8 @@ function Filters({
             setTimeframeFrom={setTimeframeFrom}
             timeframeTo={timeframeTo}
             setTimeframeTo={setTimeframeTo}
+            selectedTimeframe={selectedTimeframe}
+            setSelectedTimeframe={setSelectedTimeframe}
           />
         )}
 
