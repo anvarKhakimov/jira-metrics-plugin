@@ -22,7 +22,8 @@ export function JiraDataProvider({ children }) {
 
   const query = useQuery();
   const hostname = query.get('host');
-  const baseUrl = `https://${hostname}`;
+  const port = query.get('port');
+  const baseUrl = port ? `https://${hostname}:${port}` : `https://${hostname}`;
   const rapidViewParam = query.get('rapidView');
 
   useEffect(() => {
