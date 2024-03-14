@@ -16,6 +16,10 @@ const initialSettings = {
   selectedTimeframe: 'past_month',
   timeframeFrom: defTimeframeFrom.toISOString().split('T')[0],
   timeframeTo: defTimeframeTo.toISOString().split('T')[0],
+  resolution: 'day',
+  selectedColumns: [],
+  filters: [],
+  activeSwimlanes: [],
 };
 
 export function GlobalSettingsProvider({ children }) {
@@ -26,6 +30,10 @@ export function GlobalSettingsProvider({ children }) {
   const [selectedTimeframe, setSelectedTimeframe] = useState(initialSettings.selectedTimeframe);
   const [timeframeFrom, setTimeframeFrom] = useState(initialSettings.timeframeFrom);
   const [timeframeTo, setTimeframeTo] = useState(initialSettings.timeframeTo);
+  const [resolution, setResolution] = useState(initialSettings.resolution);
+  const [selectedColumns, setSelectedColumns] = useState(initialSettings.selectedColumns); // @TODO rename active
+  const [filters, setFilters] = useState(initialSettings.filters);
+  const [activeSwimlanes, setActiveSwimlanes] = useState(initialSettings.activeSwimlanes);
 
   const loadSettings = (jiraDomain, rapidView) => {
     const storageKey = getStorageKey(jiraDomain, rapidView);
@@ -34,6 +42,10 @@ export function GlobalSettingsProvider({ children }) {
     setSelectedTimeframe(savedSettings.selectedTimeframe || initialSettings.selectedTimeframe);
     setTimeframeFrom(savedSettings.timeframeFrom || initialSettings.timeframeFrom);
     setTimeframeTo(savedSettings.timeframeTo || initialSettings.timeframeTo);
+    setResolution(savedSettings.resolution || initialSettings.resolution);
+    setSelectedColumns(savedSettings.selectedColumns || initialSettings.selectedColumns);
+    setFilters(savedSettings.filters || initialSettings.filters);
+    setActiveSwimlanes(savedSettings.activeSwimlanes || initialSettings.activeSwimlanes);
   };
 
   const saveSettings = (jiraDomain, rapidView) => {
@@ -43,6 +55,10 @@ export function GlobalSettingsProvider({ children }) {
       selectedTimeframe,
       timeframeFrom,
       timeframeTo,
+      resolution,
+      selectedColumns,
+      filters,
+      activeSwimlanes,
     };
     localStorage.setItem(storageKey, JSON.stringify(settingsToSave));
   };
@@ -59,7 +75,16 @@ export function GlobalSettingsProvider({ children }) {
       const jiraDomain = new URL(jiraBaseUrl).hostname;
       saveSettings(jiraDomain, rapidView);
     }
-  }, [dateFormat, selectedTimeframe, timeframeFrom, timeframeTo]);
+  }, [
+    dateFormat,
+    selectedTimeframe,
+    timeframeFrom,
+    timeframeTo,
+    resolution,
+    selectedColumns,
+    filters,
+    activeSwimlanes,
+  ]);
 
   const contextValue = useMemo(
     () => ({
@@ -75,6 +100,14 @@ export function GlobalSettingsProvider({ children }) {
       setJiraBaseUrl,
       rapidView,
       setRapidView,
+      resolution,
+      setResolution,
+      selectedColumns,
+      setSelectedColumns,
+      filters,
+      setFilters,
+      activeSwimlanes,
+      setActiveSwimlanes,
     }),
     [
       dateFormat,
@@ -89,6 +122,14 @@ export function GlobalSettingsProvider({ children }) {
       setJiraBaseUrl,
       rapidView,
       setRapidView,
+      resolution,
+      setResolution,
+      selectedColumns,
+      setSelectedColumns,
+      filters,
+      setFilters,
+      activeSwimlanes,
+      setActiveSwimlanes,
     ]
   );
 

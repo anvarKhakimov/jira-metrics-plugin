@@ -11,14 +11,22 @@ function useQuery() {
 }
 
 export function JiraDataProvider({ children }) {
-  const { settings, updateSettings, jiraBaseUrl, setJiraBaseUrl, rapidView, setRapidView } =
-    useGlobalSettings();
+  const {
+    jiraBaseUrl,
+    setJiraBaseUrl,
+    rapidView,
+    setRapidView,
+    filters,
+    setFilters,
+    activeSwimlanes,
+    setActiveSwimlanes,
+  } = useGlobalSettings();
   const [isLoading, setIsLoading] = useState(false);
   const [boardConfig, setBoardConfig] = useState(null);
   const [cfdData, setCFDData] = useState(null);
-  const [filters, setFilters] = useState([]);
+  // const [filters, setFilters] = useState([]);
   const [allSwimlanes, setAllSwimlanes] = useState([]);
-  const [activeSwimlanes, setActiveSwimlanes] = useState([]);
+  // const [activeSwimlanes, setActiveSwimlanes] = useState([]);
 
   const query = useQuery();
   const hostname = query.get('host');
@@ -31,7 +39,7 @@ export function JiraDataProvider({ children }) {
       setJiraBaseUrl(baseUrl);
       setRapidView(rapidViewParam);
     } else {
-      // @todo дописать показ ошибки
+      // @TODO дописать показ ошибки
       setIsLoading(true);
       debugError('Hostname or rapidView are empty.', { hostname, rapidViewParam });
     }
@@ -57,7 +65,13 @@ export function JiraDataProvider({ children }) {
 
       const newAllSwimlanes = boardData.swimlanesConfig.swimlanes || [];
       setAllSwimlanes(newAllSwimlanes);
-      setActiveSwimlanes(newAllSwimlanes.map((s) => s.id));
+
+      setActiveSwimlanes((currentActiveSwimlanes) => {
+        if (!currentActiveSwimlanes || currentActiveSwimlanes.length === 0) {
+          return newAllSwimlanes.map((s) => s.id);
+        }
+        return currentActiveSwimlanes;
+      });
     }
 
     loadBoardConfig();
@@ -104,7 +118,7 @@ export function JiraDataProvider({ children }) {
       activeSwimlanes,
     });
     loadCFDData(); // Перезагрузка данных CFD с новыми фильтрами
-  }, [filters, activeSwimlanes]);
+  }, [loadCFDData, filters, activeSwimlanes]);
 
   const updateActiveSwimlanes = (activeSwimlaneIds) => {
     debugLog('updateActiveSwimlanes', { activeSwimlaneIds });

@@ -14,7 +14,8 @@ import { prepareFilteredTasks, prepareHistogramArray, debugLog } from '../utils/
  */
 
 export default function useChartData(boardConfig, cfdData, updateUserFilters) {
-  const { timeframeFrom, timeframeTo } = useGlobalSettings();
+  const { timeframeFrom, timeframeTo, resolution, selectedColumns, setSelectedColumns } =
+    useGlobalSettings();
   const [tasks, setTasks] = useState({});
   const [displayedTasks, setDisplayedTasks] = useState({});
 
@@ -24,20 +25,13 @@ export default function useChartData(boardConfig, cfdData, updateUserFilters) {
   const lastMonthDate = new Date(currentDate);
   lastMonthDate.setMonth(currentDate.getMonth() - 1);
 
-  // const formattedCurrentDate = currentDate.toISOString().split('T')[0];
-  // const formattedLastMonthDate = lastMonthDate.toISOString().split('T')[0];
-
-  // const [timeframeFrom, setTimeframeFrom] = useState(formattedLastMonthDate);
-  // const [timeframeTo, setTimeframeTo] = useState(formattedCurrentDate);
-
-  const [selectedColumns, setSelectedColumns] = useState([]);
-
   const [isLoading, setIsLoading] = useState(false);
 
+  // @TODO возможно стоит унести в JiraDataContext
   const [allFilters, setAllFilters] = useState([]);
-  const [activeFilters, setActiveFilters] = useState([]);
 
-  const [resolution, setResolution] = useState('day');
+  // @TODO лишний параметр
+  const [activeFilters, setActiveFilters] = useState([]);
 
   // Переключение активности фильтров
   const toggleFilter = (filterId) => {
@@ -198,9 +192,6 @@ export default function useChartData(boardConfig, cfdData, updateUserFilters) {
     setSelectedColumns,
     isLoading,
     allFilters,
-    activeFilters,
     toggleFilter,
-    resolution,
-    setResolution,
   };
 }

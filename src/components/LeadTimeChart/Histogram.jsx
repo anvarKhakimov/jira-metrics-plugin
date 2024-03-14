@@ -24,7 +24,7 @@ function Histogram({ histogramData }) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const chartWidth = windowWidth - 40;
+  const chartWidth = windowWidth - 50;
 
   function calculateXPercentile(data, percentile) {
     const weightedDays = data.flatMap((item) => Array(item.count).fill(item.days));

@@ -23,24 +23,34 @@ function Filters({
     setTimeframeFrom,
     timeframeTo,
     setTimeframeTo,
+    resolution,
+    setResolution,
+    filters,
   } = useGlobalSettings();
 
   const { cfdData, allSwimlanes, activeSwimlanes, updateActiveSwimlanes } = useJiraDataContext();
 
-  const {
-    selectedColumns,
-    setSelectedColumns,
-    allFilters,
-    activeFilters,
-    toggleFilter,
-    resolution,
-    setResolution,
-  } = useChartDataContext();
+  const { selectedColumns, setSelectedColumns, allFilters, toggleFilter } = useChartDataContext();
 
   const columns = cfdData ? cfdData.columns : [];
 
   return (
     <div>
+      {showFilters && (
+        <Box style={{ marginBottom: '10px' }}>
+          <div className="filters-wrapper">
+            {allFilters.map((filter) => (
+              <FilterButton
+                key={filter.id}
+                filter={filter}
+                isActive={filters.includes(filter.id)}
+                toggleFilter={toggleFilter}
+              />
+            ))}
+          </div>
+        </Box>
+      )}
+
       <Box display="flex" alignItems="center" justifyContent="start" flexWrap="wrap">
         {showResolution && <Resolution setResolution={setResolution} resolution={resolution} />}
 
@@ -71,21 +81,6 @@ function Filters({
           />
         )}
       </Box>
-
-      {showFilters && (
-        <Box>
-          <div className="filters-wrapper">
-            {allFilters.map((filter) => (
-              <FilterButton
-                key={filter.id}
-                filter={filter}
-                isActive={activeFilters.includes(filter.id)}
-                toggleFilter={toggleFilter}
-              />
-            ))}
-          </div>
-        </Box>
-      )}
     </div>
   );
 }

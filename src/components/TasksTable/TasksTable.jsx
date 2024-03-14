@@ -20,7 +20,7 @@ import Papa from 'papaparse';
 import { useGlobalSettings } from '../../contexts/GlobalSettingsContext';
 import { useJiraDataContext } from '../../contexts/JiraDataContext';
 import { useChartDataContext } from '../../contexts/ChartDataContext';
-import { durationToReadableFormat, debugLog } from '../../utils/utils';
+import { durationToReadableFormat } from '../../utils/utils';
 import Row from './ Row';
 import Filters from '../Filters/Filters';
 

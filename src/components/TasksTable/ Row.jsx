@@ -4,7 +4,7 @@ import Tooltip from '@mui/material/Tooltip';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { useJiraDataContext } from '../../contexts/JiraDataContext';
-import { durationToReadableFormat, debugLog } from '../../utils/utils';
+import { durationToReadableFormat } from '../../utils/utils';
 
 function TaskTimeline({ task, columnNames }) {
   // Создаем отображение названий колонок в их индексы
