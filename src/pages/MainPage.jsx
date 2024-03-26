@@ -8,6 +8,7 @@ import FullScreenLoader from '../components/FullScreenLoader';
 import PredictabilityChart from '../components/PredictabilityChart/PredictabilityChart';
 import TasksTable from '../components/TasksTable/TasksTable';
 import CumulativeDiagram from '../components/CumulativeDiagram/CumulativeDiagram';
+import AgingChart from '../components/AgingChart/AgingChart';
 import { sendPageViewEvent } from '../utils/google-analytics';
 import { isDebug } from '../utils/utils';
 
@@ -28,7 +29,7 @@ function TabPanel(props) {
 export default function MainPage() {
   const { isLoading, boardConfig, cfdData, updateUserFilters } = useJiraDataContext();
   const [searchParams, setSearchParams] = useSearchParams();
-  const tabNames = ['leadtime', 'cfd', 'predictability', 'tasks'];
+  const tabNames = ['leadtime', 'agingChart', 'cfd', 'predictability', 'tasks'];
   const tabParam = searchParams.get('tab');
   const [value, setValue] = useState(Math.max(tabNames.indexOf(tabParam), 0));
 
@@ -50,12 +51,15 @@ export default function MainPage() {
         await sendPageViewEvent('Lead Time Histogram', 'leadTime');
         break;
       case 1:
-        await sendPageViewEvent('Cumulative Flow Diagram', 'cfd');
+        await sendPageViewEvent('Aging Chart', 'agingChart');
         break;
       case 2:
-        await sendPageViewEvent('Predictability Chart', 'predictability');
+        await sendPageViewEvent('Cumulative Flow Diagram', 'cfd');
         break;
       case 3:
+        await sendPageViewEvent('Predictability Chart', 'predictability');
+        break;
+      case 4:
         await sendPageViewEvent('Tasks Table', 'tasks');
         break;
       default:
@@ -80,8 +84,9 @@ export default function MainPage() {
         style={{ backgroundColor: isDebug ? '#fac7c7' : undefined }}
         elevation={0}
       >
-        <Tabs value={value} onChange={handleChange} aria-label="simple tabs example">
+        <Tabs value={value} onChange={handleChange}>
           <Tab label="Lead Time" />
+          <Tab label="Aging Chart" />
           <Tab label="CFD" />
           <Tab label="Predictability" />
           <Tab label="Tasks Table" />
@@ -98,12 +103,15 @@ export default function MainPage() {
         <LeadTimeChart />
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <CumulativeDiagram />
+        <AgingChart />
       </TabPanel>
       <TabPanel value={value} index={2}>
-        <PredictabilityChart />
+        <CumulativeDiagram />
       </TabPanel>
       <TabPanel value={value} index={3}>
+        <PredictabilityChart />
+      </TabPanel>
+      <TabPanel value={value} index={4}>
         <TasksTable />
       </TabPanel>
     </ChartDataProvider>

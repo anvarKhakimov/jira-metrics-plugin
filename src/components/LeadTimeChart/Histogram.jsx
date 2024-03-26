@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar, ReferenceLine } from 'recharts';
 import CustomTooltip from './CustomTooltip';
+import { calculateXPercentile } from '../../utils/utils';
 
 function Histogram({ histogramData }) {
   // Вычисляем максимальное значение дня на основе данных гистограммы
@@ -25,13 +26,6 @@ function Histogram({ histogramData }) {
   }, []);
 
   const chartWidth = windowWidth - 50;
-
-  function calculateXPercentile(data, percentile) {
-    const weightedDays = data.flatMap((item) => Array(item.count).fill(item.days));
-    const sortedDays = weightedDays.sort((a, b) => a - b);
-    const index = Math.ceil((percentile / 100) * sortedDays.length) - 1;
-    return sortedDays[index] || 0;
-  }
 
   const percentile95X = calculateXPercentile(completeHistogramData, 95);
   const percentile50X = calculateXPercentile(completeHistogramData, 50);

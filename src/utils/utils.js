@@ -6,20 +6,46 @@ export function getColumnIndexByName(columns, columnName) {
   return columns.findIndex((column) => column.name === columnName);
 }
 
-export function convertTimeToResolution(timeInMilliseconds, resolution) {
-  const timeInDays = timeInMilliseconds / 86400000; // Конвертация из миллисекунд в дни
+function millisecondsToWeeks(milliseconds) {
+  return Math.ceil(milliseconds / (7 * 86400000));
+}
 
+function millisecondsToMonths(milliseconds) {
+  return Math.ceil(milliseconds / (30 * 86400000));
+}
+
+function millisecondsToTotalDays(milliseconds) {
+  return Math.ceil(milliseconds / 86400000);
+}
+
+// @TODO убрать default, добавить days
+export function convertTimeToResolution(timeInMilliseconds, resolution) {
   switch (resolution) {
     case 'week':
-      return Math.ceil(timeInDays / 7);
+      return millisecondsToWeeks(timeInMilliseconds);
     case 'two-weeks':
-      return Math.ceil(timeInDays / 14);
+      return millisecondsToWeeks(timeInMilliseconds) / 2;
     case 'month':
-      return Math.ceil(timeInDays / 30);
+      return millisecondsToMonths(timeInMilliseconds);
     default:
-      return Math.ceil(timeInDays); // По умолчанию время в днях
+      return millisecondsToTotalDays(timeInMilliseconds);
   }
 }
+
+// export function convertTimeToResolution(timeInMilliseconds, resolution) {
+//   const timeInDays = timeInMilliseconds / 86400000; // Конвертация из миллисекунд в дни
+
+//   switch (resolution) {
+//     case 'week':
+//       return Math.ceil(timeInDays / 7);
+//     case 'two-weeks':
+//       return Math.ceil(timeInDays / 14);
+//     case 'month':
+//       return Math.ceil(timeInDays / 30);
+//     default:
+//       return Math.ceil(timeInDays); // По умолчанию время в днях
+//   }
+// }
 
 /**
  * Преобразует количество миллисекунд в удобочитаемый текстовый формат, включая месяцы, недели, дни, часы, минуты и секунды.
@@ -41,7 +67,7 @@ export function convertTimeToResolution(timeInMilliseconds, resolution) {
 
 export function durationToReadableFormat(milliseconds, format = 'default') {
   const DAYS_PER_WEEK = 7;
-  const DAYS_PER_MONTH = 30; // Примерное значение
+  const DAYS_PER_MONTH = 30;
   const HOURS_PER_DAY = 24;
   const MINUTES_PER_HOUR = 60;
   const SECONDS_PER_MINUTE = 60;
@@ -69,20 +95,21 @@ export function durationToReadableFormat(milliseconds, format = 'default') {
 
   const seconds = Math.floor(remainingMilliseconds / MILLISECONDS_PER_SECOND);
 
-  // Пересчет общего количества дней для формата "в днях"
-  const totalDays = months * DAYS_PER_MONTH + weeks * DAYS_PER_WEEK + days;
-  // Пересчет общего количества недель для формата "в неделях"
-  const totalWeeks = (months * DAYS_PER_MONTH + weeks * DAYS_PER_WEEK + days) / DAYS_PER_WEEK;
-
   switch (format) {
     case 'hours': {
-      return `${Math.floor(milliseconds / MILLISECONDS_PER_HOUR)} hour${Math.floor(milliseconds / MILLISECONDS_PER_HOUR) !== 1 ? 's' : ''}`;
+      return `${Math.floor(milliseconds / MILLISECONDS_PER_HOUR)} hour${
+        Math.floor(milliseconds / MILLISECONDS_PER_HOUR) !== 1 ? 's' : ''
+      }`;
     }
     case 'days': {
-      return `${totalDays} day${totalDays !== 1 ? 's' : ''}`;
+      return `${millisecondsToTotalDays(milliseconds)} day${
+        millisecondsToTotalDays(milliseconds) !== 1 ? 's' : ''
+      }`;
     }
     case 'weeks': {
-      return `${totalWeeks.toFixed(0)} week${totalWeeks.toFixed(0) !== '1' ? 's' : ''}`;
+      return `${millisecondsToWeeks(milliseconds)} week${
+        millisecondsToWeeks(milliseconds) !== 1 ? 's' : ''
+      }`;
     }
     case 'timestamp': {
       return `${milliseconds}`;
@@ -230,11 +257,18 @@ export function filterTaskByTime(task, columns, timeframeFrom, timeframeTo) {
 export function prepareFilteredTasks(tasks, columns, selectedColumns, timeframeFrom, timeframeTo) {
   return Object.entries(tasks).reduce((acc, [taskKey, taskDetails]) => {
     if (filterTaskByTime(taskDetails, columns, timeframeFrom, timeframeTo)) {
+      if (taskKey === 'PORTFOLIO-28257') console.log('task PORTFOLIO-28257', taskDetails);
       const selectedColumnIndices = selectedColumns.map((columnName) =>
         getColumnIndexByName(columns, columnName)
       );
 
       const leadTime = selectedColumnIndices.reduce((total, columnIndex) => {
+        if (taskKey === 'PORTFOLIO-28257')
+          console.log(
+            'columnIndex PORTFOLIO-28257',
+            columnIndex,
+            taskDetails.durations[columnIndex]
+          );
         const duration = taskDetails.durations[columnIndex] || 0;
         return total + duration;
       }, 0);
@@ -288,6 +322,13 @@ export function prepareHistogramArray(filteredTasks, resolution) {
     count: data.count,
     tasks: data.tasks,
   }));
+}
+
+export function calculateXPercentile(data, percentile) {
+  const weightedDays = data.flatMap((item) => Array(item.count).fill(item.days));
+  const sortedDays = weightedDays.sort((a, b) => a - b);
+  const index = Math.ceil((percentile / 100) * sortedDays.length) - 1;
+  return sortedDays[index] || 0;
 }
 
 export function debugLog(...messages) {
