@@ -235,6 +235,13 @@ export function filterTaskByTime(task, columns, timeframeFrom, timeframeTo) {
   });
 }
 
+export function calculateLeadTime(taskDetails, selectedColumnIndices) {
+  return selectedColumnIndices.reduce((total, columnIndex) => {
+    const duration = taskDetails.durations[columnIndex] || 0;
+    return total + duration;
+  }, 0);
+}
+
 /**
  * Фильтрует и подготавливает задачи на основе заданных критериев.
  * Возвращает объект, где ключи - это идентификаторы задач, а значения - детали задач,
@@ -255,23 +262,13 @@ export function filterTaskByTime(task, columns, timeframeFrom, timeframeTo) {
  * }
  */
 export function prepareFilteredTasks(tasks, columns, selectedColumns, timeframeFrom, timeframeTo) {
+  const selectedColumnIndices = selectedColumns.map((columnName) =>
+    getColumnIndexByName(columns, columnName)
+  );
+
   return Object.entries(tasks).reduce((acc, [taskKey, taskDetails]) => {
     if (filterTaskByTime(taskDetails, columns, timeframeFrom, timeframeTo)) {
-      if (taskKey === 'PORTFOLIO-28257') console.log('task PORTFOLIO-28257', taskDetails);
-      const selectedColumnIndices = selectedColumns.map((columnName) =>
-        getColumnIndexByName(columns, columnName)
-      );
-
-      const leadTime = selectedColumnIndices.reduce((total, columnIndex) => {
-        if (taskKey === 'PORTFOLIO-28257')
-          console.log(
-            'columnIndex PORTFOLIO-28257',
-            columnIndex,
-            taskDetails.durations[columnIndex]
-          );
-        const duration = taskDetails.durations[columnIndex] || 0;
-        return total + duration;
-      }, 0);
+      const leadTime = calculateLeadTime(taskDetails, selectedColumnIndices);
 
       acc[taskKey] = {
         ...taskDetails,
@@ -329,6 +326,19 @@ export function calculateXPercentile(data, percentile) {
   const sortedDays = weightedDays.sort((a, b) => a - b);
   const index = Math.ceil((percentile / 100) * sortedDays.length) - 1;
   return sortedDays[index] || 0;
+}
+
+export function calculatePercentile(values, percentileRank) {
+  if (!values.length) return 0;
+
+  // Копирование и сортировка массива для получения отсортированной копии
+  const sortedValues = [...values].sort((a, b) => a - b);
+
+  // Рассчет индекса процентиля
+  const index = Math.ceil((percentileRank / 100) * sortedValues.length) - 1;
+
+  // Возвращение значения процентиля
+  return sortedValues[index];
 }
 
 export function debugLog(...messages) {
