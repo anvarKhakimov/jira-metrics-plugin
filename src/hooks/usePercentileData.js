@@ -23,10 +23,10 @@ const usePercentileData = (displayedTasks) => {
         align: 'right',
         x: 0,
         style: {
-          color: getPercentileColor(percentile),
+          color: '#000000',
         },
       },
-      color: getPercentileColor(percentile),
+      color: '#000000',
       dashStyle: 'Dot',
       width: 2,
       value: percentileValues[index],

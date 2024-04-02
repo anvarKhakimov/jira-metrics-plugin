@@ -1,8 +1,17 @@
 // AgingChart.jsx
 
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Highcharts from 'highcharts';
 import AnnotationsModule from 'highcharts/modules/annotations';
+import {
+  FormControl,
+  Select,
+  MenuItem,
+  InputLabel,
+  OutlinedInput,
+  Checkbox,
+  ListItemText,
+} from '@mui/material';
 import { useGlobalSettings } from '../../contexts/GlobalSettingsContext';
 import { useJiraDataContext } from '../../contexts/JiraDataContext';
 import { useChartDataContext } from '../../contexts/ChartDataContext';
@@ -23,6 +32,13 @@ function AgingChart() {
   const { cfdData, jiraBaseUrl } = useJiraDataContext();
   const { tasks, displayedTasks } = useChartDataContext();
   const jiraDomain = new URL(jiraBaseUrl).origin;
+
+  const [percentileSelections, setPercentileSelections] = useState([30, 50, 70, 85, 95]);
+  const percentilesOptions = [30, 50, 70, 85, 95];
+
+  const handlePercentileChange = (event) => {
+    setPercentileSelections(event.target.value);
+  };
 
   const generateAnnotationsFromPercentiles = (columnPercentiles) =>
     columnPercentiles.map((column, index) => {
@@ -60,7 +76,7 @@ function AgingChart() {
 
       return {
         draggable: false,
-        zIndex: 1,
+        zIndex: 0,
         shapes,
       };
     });
@@ -73,7 +89,12 @@ function AgingChart() {
 
   const percentileData = usePercentileData(tasksInLastColumn);
 
-  const columnPercentiles = useColumnPercentiles(cfdData, selectedColumns, tasksInLastColumn);
+  const columnPercentiles = useColumnPercentiles(
+    cfdData,
+    selectedColumns,
+    tasksInLastColumn,
+    percentileSelections
+  );
 
   console.log('columnPercentiles', columnPercentiles);
 
@@ -113,6 +134,7 @@ function AgingChart() {
           text: 'Cycle Time (days)',
         },
         plotLines: percentileData,
+        gridLineColor: '#f1f1f1',
       },
       annotations: generateAnnotationsFromPercentiles(columnPercentiles),
       legend: {
@@ -129,8 +151,8 @@ function AgingChart() {
           marker: {
             symbol: 'circle',
             lineWidth: 1,
-            lineColor: 'green',
-            fillColor: 'green',
+            lineColor: '#90C065',
+            fillColor: '#90C065',
           },
           dataLabels: {
             enabled: true,
@@ -217,13 +239,33 @@ function AgingChart() {
     };
 
     Highcharts.chart(chartRef.current, chartOptions);
-  }, [selectedColumns, agingData, wipData, percentileData, cfdData.columns]);
+  }, [selectedColumns, agingData, wipData, percentileData, cfdData.columns, percentileSelections]);
 
   return (
     <>
       <div ref={chartRef} style={{ width: '100%' }} />
       <br />
       <Filters showResolution={false} />
+      <br />
+      <FormControl sx={{ m: 1, width: 300 }}>
+        <InputLabel id="pace-percentiles-select-label">Pace Percentiles</InputLabel>
+        <Select
+          labelId="pace-percentiles-select-label"
+          id="pace-percentiles-select"
+          multiple
+          value={percentileSelections}
+          onChange={handlePercentileChange}
+          input={<OutlinedInput label="Pace Percentiles" />}
+          renderValue={(selected) => selected.join(', ')}
+        >
+          {percentilesOptions.map((percentile) => (
+            <MenuItem key={percentile} value={percentile}>
+              <Checkbox checked={percentileSelections.indexOf(percentile) > -1} />
+              <ListItemText primary={`${percentile}%`} />
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
     </>
   );
 }
