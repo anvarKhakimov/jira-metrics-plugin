@@ -7,13 +7,14 @@ const useColumnPercentiles = (cfdData, selectedColumns, displayedTasks, percenti
   // Проверяем, переданы ли допустимые процентили
   const allowedPercentiles = [30, 50, 70, 85, 95];
   const percentiles = percentilesList.filter((p) => allowedPercentiles.includes(p));
-
-  // Если процентили не переданы, возвращаем пустой массив
-  if (percentiles.length === 0) {
-    return [];
-  }
+  percentiles.sort((a, b) => a - b);
 
   const columnPercentiles = useMemo(() => {
+    // Если процентили не переданы, возвращаем пустой массив
+    if (percentiles.length === 0) {
+      return [];
+    }
+
     const filteredColumnIndices = cfdData.columns
       .map((col, index) => ({ name: col.name, index }))
       .filter((col) => selectedColumns.includes(col.name));
@@ -49,7 +50,7 @@ const useColumnPercentiles = (cfdData, selectedColumns, displayedTasks, percenti
         segments.push({
           from: lastPercentileValue,
           to: 9999,
-          percentile: 'Above ' + percentiles[percentiles.length - 1],
+          percentile: `Above ${percentiles[percentiles.length - 1]}`,
           color: '#FF9AA2',
         });
       }
@@ -62,13 +63,6 @@ const useColumnPercentiles = (cfdData, selectedColumns, displayedTasks, percenti
     });
   }, [cfdData.columns, displayedTasks, selectedColumns, percentiles]);
 
-  // Helper function to assign colors to percentiles
-  // if (percentile === 30) return 'rgba(0, 128, 0, 0.5)';
-  // if (percentile === 50) return 'rgba(173, 255, 47, 0.5)';
-  // if (percentile === 70) return 'rgba(255, 165, 0, 0.5)';
-  // if (percentile === 85) return 'rgba(250, 128, 114, 0.5)';
-  // if (percentile === 95) return 'rgba(255, 0, 0, 0.5)';
-  // return 'rgba(139, 0, 0, 0.5)'; // Default color for >95 percentile
   function getPercentileColor(percentile) {
     if (percentile === 30) return '#8EDFC2';
     if (percentile === 50) return '#B5EBD7';

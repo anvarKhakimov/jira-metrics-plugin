@@ -1,6 +1,6 @@
 // AgingChart.jsx
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import Highcharts from 'highcharts';
 import AnnotationsModule from 'highcharts/modules/annotations';
 import {
@@ -34,10 +34,16 @@ function AgingChart() {
   const jiraDomain = new URL(jiraBaseUrl).origin;
 
   const [percentileSelections, setPercentileSelections] = useState([30, 50, 70, 85, 95]);
+  const [completionCriteria, setCompletionCriteria] = useState('all');
+
   const percentilesOptions = [30, 50, 70, 85, 95];
 
   const handlePercentileChange = (event) => {
     setPercentileSelections(event.target.value);
+  };
+
+  const handleCompletionCriteriaChange = (event) => {
+    setCompletionCriteria(event.target.value);
   };
 
   const generateAnnotationsFromPercentiles = (columnPercentiles) =>
@@ -83,7 +89,7 @@ function AgingChart() {
 
   const agingData = useAgingData(cfdData, selectedColumns, tasks, timeframeFrom, timeframeTo);
 
-  const wipData = useWipData(cfdData, selectedColumns, displayedTasks, timeframeFrom, timeframeTo);
+  const wipData = useWipData(cfdData, selectedColumns, tasks);
 
   const tasksInLastColumn = useTasksInLastColumn(cfdData, selectedColumns, displayedTasks);
 
@@ -96,22 +102,14 @@ function AgingChart() {
     percentileSelections
   );
 
-  console.log('columnPercentiles', columnPercentiles);
+  const annotations = useMemo(() => {
+    if (percentileSelections.length === 0) {
+      return [];
+    }
+    const annotationsResults = generateAnnotationsFromPercentiles(columnPercentiles);
 
-  // const columnPercentiles = [
-  //   {
-  //     column: 0,
-  //     segments: [
-  //       { from: 0, to: 30, color: 'rgba(0, 128, 0, 0.5)' }, // Зеленый с прозрачностью 50%
-  //       { from: 30, to: 50, color: 'rgba(173, 255, 47, 0.5)' }, // Желто-зеленый с прозрачностью 50%
-  //       { from: 50, to: 70, color: 'rgba(255, 165, 0, 0.5)' }, // Оранжевый с прозрачностью 50%
-  //       { from: 70, to: 85, color: 'rgba(250, 128, 114, 0.5)' }, // Лососевый (salmon) с прозрачностью 50%
-  //       { from: 85, to: 95, color: 'rgba(255, 0, 0, 0.5)' }, // Красный с прозрачностью 50%
-  //       { from: 95, to: 100, color: 'rgba(139, 0, 0, 0.5)' }, // Темно-красный (darkred) с прозрачностью 50%
-  //     ],
-  //   },
-  //   // Добавьте другие столбцы по аналогии
-  // ];
+    return annotationsResults;
+  }, [percentileSelections, columnPercentiles]);
 
   useEffect(() => {
     const chartOptions = {
@@ -136,7 +134,7 @@ function AgingChart() {
         plotLines: percentileData,
         gridLineColor: '#f1f1f1',
       },
-      annotations: generateAnnotationsFromPercentiles(columnPercentiles),
+      annotations,
       legend: {
         enabled: false,
       },
@@ -180,8 +178,6 @@ function AgingChart() {
           dataLabels: {
             enabled: true,
             format: '{point.label}',
-            //align: 'left',
-            //verticalAlign: 'top',
             y: -500,
           },
           enableMouseTracking: false,
@@ -207,11 +203,6 @@ function AgingChart() {
           return `${tasks.join('<br/>')}`;
         },
       },
-      //     headerFormat: '<table><tr><th colspan="2">Cycle Time: {point.key}</th></tr>',
-      //     pointFormat: '<tr><td style="color: {series.color}">{series.name} ' +
-      //         '</td>' +
-      //         '<td style="text-align: right"><b>{point.y} EUR</b></td></tr>',
-      //   },
       plotOptions: {
         scatter: {
           marker: {
@@ -239,7 +230,7 @@ function AgingChart() {
     };
 
     Highcharts.chart(chartRef.current, chartOptions);
-  }, [selectedColumns, agingData, wipData, percentileData, cfdData.columns, percentileSelections]);
+  }, [selectedColumns, agingData, wipData, percentileData, cfdData.columns, annotations]);
 
   return (
     <>
@@ -264,6 +255,19 @@ function AgingChart() {
               <ListItemText primary={`${percentile}%`} />
             </MenuItem>
           ))}
+        </Select>
+      </FormControl>
+      <FormControl sx={{ m: 1, width: 300 }}>
+        <InputLabel id="completion-criteria-select-label">Completion Criteria</InputLabel>
+        <Select
+          labelId="completion-criteria-select-label"
+          id="completion-criteria-select"
+          value={completionCriteria}
+          onChange={handleCompletionCriteriaChange}
+          input={<OutlinedInput label="Completion Criteria" />}
+        >
+          <MenuItem value="all">All Columns</MenuItem>
+          <MenuItem value="last">Last Column</MenuItem>
         </Select>
       </FormControl>
     </>
