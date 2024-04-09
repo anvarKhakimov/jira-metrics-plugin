@@ -32,6 +32,8 @@ export function GlobalSettingsProvider({ children }) {
   const [timeframeTo, setTimeframeTo] = useState(initialSettings.timeframeTo);
   const [resolution, setResolution] = useState(initialSettings.resolution);
   const [selectedColumns, setSelectedColumns] = useState(initialSettings.selectedColumns); // @TODO rename active
+  const [allColumns, setAllColumns] = useState([]);
+  const [activeColumns, setActiveColumns] = useState([]);
   const [filters, setFilters] = useState(initialSettings.filters);
   const [activeSwimlanes, setActiveSwimlanes] = useState(initialSettings.activeSwimlanes);
 
@@ -86,6 +88,24 @@ export function GlobalSettingsProvider({ children }) {
     activeSwimlanes,
   ]);
 
+  useEffect(() => {
+    // Функция для обновления активных колонок
+    const updateActiveColumns = () => {
+      // Проверка, не пустой ли массив allColumns
+      if (allColumns && allColumns.length > 0) {
+        // Создание массива активных колонок с индексами на основе порядка в allColumns
+        const newActiveColumns = allColumns
+          .filter((column) => selectedColumns.includes(column.name))
+          .map((column) => ({ name: column.name, index: allColumns.indexOf(column) }));
+
+        setActiveColumns(newActiveColumns); // Обновление состояния активных колонок
+      }
+    };
+
+    // Вызов функции обновления активных колонок
+    updateActiveColumns();
+  }, [selectedColumns, allColumns]);
+
   const contextValue = useMemo(
     () => ({
       dateFormat,
@@ -104,6 +124,10 @@ export function GlobalSettingsProvider({ children }) {
       setResolution,
       selectedColumns,
       setSelectedColumns,
+      allColumns,
+      setAllColumns,
+      activeColumns,
+      setActiveColumns,
       filters,
       setFilters,
       activeSwimlanes,
@@ -126,6 +150,10 @@ export function GlobalSettingsProvider({ children }) {
       setResolution,
       selectedColumns,
       setSelectedColumns,
+      allColumns,
+      setAllColumns,
+      activeColumns,
+      setActiveColumns,
       filters,
       setFilters,
       activeSwimlanes,

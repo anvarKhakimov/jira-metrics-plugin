@@ -1,42 +1,44 @@
+// useAgingData
 import { useMemo } from 'react';
-import { convertTimeToResolution, getColumnIndexByName, calculateLeadTime } from '../utils/utils';
+import { convertTimeToResolution, calculateLeadTime, isTaskInCurrentColumn } from '../utils/utils';
 
-const useAgingData = (cfdData, selectedColumns, tasks, timeframeFrom, timeframeTo) => {
+const useAgingData = (
+  cfdData,
+  activeColumns, // Изменим название аргумента на activeColumns
+  tasks,
+  timeframeFrom,
+  timeframeTo,
+  completionCriteria
+) => {
   const agingData = useMemo(() => {
-    const selectedColumnIndices = selectedColumns.map((columnName) =>
-      getColumnIndexByName(cfdData.columns, columnName)
-    );
+    // Изменяем логику для работы с activeColumns, которые уже содержат индексы
+    const activeColumnIndices = activeColumns.map((column) => column.index);
 
-    return cfdData.columns
-      .filter((col) => selectedColumns.includes(col.name))
-      .map((col, colIndex) => {
-        const taskDots = Object.values(tasks)
-          .map((task) => ({
-            ...task,
-            leadTime: calculateLeadTime(task, selectedColumnIndices), // Добавляем расчёт leadTime
-          }))
-          .filter((task) => {
-            const currentColumnIndex = cfdData.columns.findIndex((c) => c.name === col.name);
-            const startTimes = task.starts[currentColumnIndex] || [];
-            const endTimes = task.ends[currentColumnIndex] || [];
-            const lastStartTime = startTimes.length > 0 ? Math.max(...startTimes) : null;
-            const isInCurrentColumn =
-              lastStartTime !== null &&
-              (endTimes.length === 0 || lastStartTime >= endTimes[endTimes.length - 1]);
-            const lastStartDate = lastStartTime
-              ? new Date(lastStartTime).toISOString().split('T')[0]
-              : null;
-            return isInCurrentColumn; // && lastStartDate >= timeframeFrom && lastStartDate <= timeframeTo
-          })
-          .map((task) => {
-            const agingTime = convertTimeToResolution(task.leadTime);
-            return {
-              x: colIndex,
-              y: agingTime,
-              taskKey: task.key,
-              agingTime,
-            };
-          });
+    return activeColumns // Используем activeColumns вместо фильтрации cfdData.columns
+      .map((activeColumn, index) => {
+        let taskDots = [];
+
+        // Проверяем, является ли текущая колонка последней
+        if (completionCriteria === 'last' && index === activeColumns.length - 1) {
+          // Если это последняя колонка и Completion Criteria = Last Column, не отображаем задачи
+          taskDots = [];
+        } else {
+          taskDots = Object.values(tasks)
+            .map((task) => ({
+              ...task,
+              leadTime: calculateLeadTime(task, activeColumnIndices), // Расчёт leadTime с использованием индексов из activeColumns
+            }))
+            .filter((task) => isTaskInCurrentColumn(task, activeColumn.index, cfdData.columns))
+            .map((task) => {
+              const agingTime = convertTimeToResolution(task.leadTime, 'day');
+              return {
+                x: index,
+                y: agingTime,
+                taskKey: task.key,
+                agingTime,
+              };
+            });
+        }
 
         const groupedTaskDots = taskDots.reduce((acc, dot) => {
           const existingGroup = acc.find((group) => Math.abs(group.y - dot.y) <= 5);
@@ -54,11 +56,11 @@ const useAgingData = (cfdData, selectedColumns, tasks, timeframeFrom, timeframeT
         }, []);
 
         return {
-          name: col.name,
+          name: activeColumn.name,
           data: groupedTaskDots,
         };
       });
-  }, [cfdData, selectedColumns, tasks, timeframeFrom, timeframeTo]);
+  }, [cfdData.columns, activeColumns, tasks, timeframeFrom, timeframeTo, completionCriteria]);
 
   return agingData;
 };

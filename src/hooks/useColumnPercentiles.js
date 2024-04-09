@@ -1,43 +1,54 @@
 import { useMemo } from 'react';
-import { calculatePercentile } from '../utils/utils'; // функция для расчета X-го процентиля
+import { calculatePercentile } from '../utils/utils';
 
-const useColumnPercentiles = (cfdData, selectedColumns, displayedTasks, percentilesList = []) => {
+const useColumnPercentiles = (
+  cfdData,
+  activeColumns,
+  displayedTasks,
+  percentilesList = [],
+  completionCriteria
+) => {
   const msInDay = 86400000;
-
-  // Проверяем, переданы ли допустимые процентили
   const allowedPercentiles = [30, 50, 70, 85, 95];
   const percentiles = percentilesList.filter((p) => allowedPercentiles.includes(p));
   percentiles.sort((a, b) => a - b);
 
   const columnPercentiles = useMemo(() => {
-    // Если процентили не переданы, возвращаем пустой массив
     if (percentiles.length === 0) {
       return [];
     }
 
-    const filteredColumnIndices = cfdData.columns
-      .map((col, index) => ({ name: col.name, index }))
-      .filter((col) => selectedColumns.includes(col.name));
+    const filteredColumnIndices =
+      completionCriteria === 'last' ? activeColumns.slice(0, -1) : [...activeColumns];
 
     return filteredColumnIndices.map(({ name, index: columnIndex }) => {
-      const accumulatedTimes = Object.values(displayedTasks).map((task) => {
+      // Сбор детализированных данных о лидтаймах задач
+      const taskDetails = Object.entries(displayedTasks).map(([taskId, task]) => {
         let accumulatedTime = 0;
-        for (let { index } of filteredColumnIndices) {
-          if (task.durations[index] !== undefined) {
-            accumulatedTime += task.durations[index];
-            if (index === columnIndex) break;
-          }
+        const detailTimes = [];
+
+        for (let { index, name: columnName } of filteredColumnIndices) {
+          const duration = task.durations[index] || 0;
+          accumulatedTime += duration;
+          detailTimes.push({ columnName, duration });
+
+          if (index === columnIndex) break;
         }
-        return accumulatedTime / msInDay;
+
+        return {
+          taskId,
+          accumulatedTime: accumulatedTime / msInDay,
+          detailTimes,
+        };
       });
 
-      // Расчет процентилей для времен только для указанных процентилей
+      const accumulatedTimes = taskDetails.map(({ accumulatedTime }) => accumulatedTime);
+
       const percentileValues = percentiles.map((p) => ({
         percentile: p,
         value: calculatePercentile(accumulatedTimes.filter(Boolean), p),
       }));
 
-      // Формирование сегментов на основе процентилей
       const segments = percentileValues.map((percentileData, index) => ({
         from: index === 0 ? 0 : percentileValues[index - 1].value,
         to: percentileData.value,
@@ -59,9 +70,12 @@ const useColumnPercentiles = (cfdData, selectedColumns, displayedTasks, percenti
         column: columnIndex,
         name,
         segments,
+        rawAccumulatedTimes: accumulatedTimes,
+        percentileCalculations: percentileValues,
+        taskDetails, // Добавляем детализированные данные о лидтаймах задач
       };
     });
-  }, [cfdData.columns, displayedTasks, selectedColumns, percentiles]);
+  }, [cfdData.columns, displayedTasks, activeColumns, percentiles, completionCriteria]);
 
   function getPercentileColor(percentile) {
     if (percentile === 30) return '#8EDFC2';

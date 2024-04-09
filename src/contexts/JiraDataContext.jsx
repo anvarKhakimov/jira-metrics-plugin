@@ -16,11 +16,13 @@ export function JiraDataProvider({ children }) {
     setJiraBaseUrl,
     rapidView,
     setRapidView,
+    setAllColumns,
     filters,
     setFilters,
     activeSwimlanes,
     setActiveSwimlanes,
   } = useGlobalSettings();
+
   const [isLoading, setIsLoading] = useState(false);
   const [boardConfig, setBoardConfig] = useState(null);
   const [cfdData, setCFDData] = useState(null);
@@ -108,6 +110,8 @@ export function JiraDataProvider({ children }) {
     debugLog('CFD data loaded', cfdDataLoaded);
     setCFDData(cfdDataLoaded);
     debugLog('Set cfdData');
+
+    setAllColumns(cfdDataLoaded.columns);
 
     setIsLoading(false);
   }, [boardConfig, filters, activeSwimlanes]);

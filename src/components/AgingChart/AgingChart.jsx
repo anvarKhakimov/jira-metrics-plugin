@@ -23,12 +23,15 @@ import useTasksInLastColumn from '../../hooks/useTasksInLastColumn';
 import useColumnPercentiles from '../../hooks/useColumnPercentiles';
 
 import Filters from '../Filters/Filters';
+import ColumnPercentilesDetails from './ColumnPercentilesDetails';
+
+import { isDebug, generateJiraIssuesUrl } from '../../utils/utils';
 
 AnnotationsModule(Highcharts);
 
 function AgingChart() {
   const chartRef = useRef(null);
-  const { timeframeFrom, timeframeTo, selectedColumns } = useGlobalSettings();
+  const { timeframeFrom, timeframeTo, selectedColumns, activeColumns } = useGlobalSettings();
   const { cfdData, jiraBaseUrl } = useJiraDataContext();
   const { tasks, displayedTasks } = useChartDataContext();
   const jiraDomain = new URL(jiraBaseUrl).origin;
@@ -87,20 +90,35 @@ function AgingChart() {
       };
     });
 
-  const agingData = useAgingData(cfdData, selectedColumns, tasks, timeframeFrom, timeframeTo);
+  const agingData = useAgingData(
+    cfdData,
+    activeColumns,
+    tasks,
+    timeframeFrom,
+    timeframeTo,
+    completionCriteria
+  );
 
-  const wipData = useWipData(cfdData, selectedColumns, tasks);
+  const wipData = useWipData(cfdData, activeColumns, tasks, completionCriteria);
 
-  const tasksInLastColumn = useTasksInLastColumn(cfdData, selectedColumns, displayedTasks);
+  const tasksInLastColumn = useTasksInLastColumn(activeColumns, displayedTasks, completionCriteria);
 
-  const percentileData = usePercentileData(tasksInLastColumn);
+  const percentileData = usePercentileData(
+    tasksInLastColumn,
+    completionCriteria,
+    selectedColumns,
+    cfdData
+  );
 
   const columnPercentiles = useColumnPercentiles(
     cfdData,
-    selectedColumns,
+    activeColumns,
     tasksInLastColumn,
-    percentileSelections
+    percentileSelections,
+    completionCriteria
   );
+
+  console.log('columnPercentiles', columnPercentiles);
 
   const annotations = useMemo(() => {
     if (percentileSelections.length === 0) {
@@ -270,6 +288,19 @@ function AgingChart() {
           <MenuItem value="last">Last Column</MenuItem>
         </Select>
       </FormControl>
+      {isDebug && tasksInLastColumn && (
+        <>
+          <br />
+          <a
+            href={generateJiraIssuesUrl(tasksInLastColumn, jiraDomain)}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Tasks For Percentilies
+          </a>
+          <ColumnPercentilesDetails columnPercentiles={columnPercentiles} />
+        </>
+      )}
     </>
   );
 }
