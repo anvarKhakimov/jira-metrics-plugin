@@ -31,13 +31,22 @@ AnnotationsModule(Highcharts);
 
 function AgingChart() {
   const chartRef = useRef(null);
-  const { timeframeFrom, timeframeTo, selectedColumns, activeColumns } = useGlobalSettings();
+  const {
+    timeframeFrom,
+    timeframeTo,
+    selectedColumns,
+    activeColumns,
+    percentileSelections,
+    setPercentileSelections,
+    completionCriteria,
+    setCompletionCriteria,
+  } = useGlobalSettings();
   const { cfdData, jiraBaseUrl } = useJiraDataContext();
   const { tasks, displayedTasks } = useChartDataContext();
   const jiraDomain = new URL(jiraBaseUrl).origin;
 
-  const [percentileSelections, setPercentileSelections] = useState([30, 50, 70, 85, 95]);
-  const [completionCriteria, setCompletionCriteria] = useState('all');
+  // const [percentileSelections, setPercentileSelections] = useState([30, 50, 70, 85, 95]);
+  //const [completionCriteria, setCompletionCriteria] = useState('all');
 
   const percentilesOptions = [30, 50, 70, 85, 95];
 
@@ -282,8 +291,8 @@ function AgingChart() {
           onChange={handleCompletionCriteriaChange}
           input={<OutlinedInput label="Completion Criteria" />}
         >
-          <MenuItem value="all">All Columns</MenuItem>
           <MenuItem value="last">Last Column</MenuItem>
+          <MenuItem value="all">All Columns</MenuItem>
         </Select>
       </FormControl>
       {isDebug && tasksInLastColumn && (

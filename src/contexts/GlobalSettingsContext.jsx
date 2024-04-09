@@ -20,6 +20,8 @@ const initialSettings = {
   selectedColumns: [],
   filters: [],
   activeSwimlanes: [],
+  percentileSelections: [30, 50, 70, 85, 95],
+  completionCriteria: 'last',
 };
 
 export function GlobalSettingsProvider({ children }) {
@@ -36,6 +38,10 @@ export function GlobalSettingsProvider({ children }) {
   const [activeColumns, setActiveColumns] = useState([]);
   const [filters, setFilters] = useState(initialSettings.filters);
   const [activeSwimlanes, setActiveSwimlanes] = useState(initialSettings.activeSwimlanes);
+  const [percentileSelections, setPercentileSelections] = useState(
+    initialSettings.percentileSelections
+  );
+  const [completionCriteria, setCompletionCriteria] = useState(initialSettings.completionCriteria);
 
   const loadSettings = (jiraDomain, rapidView) => {
     const storageKey = getStorageKey(jiraDomain, rapidView);
@@ -48,6 +54,10 @@ export function GlobalSettingsProvider({ children }) {
     setSelectedColumns(savedSettings.selectedColumns || initialSettings.selectedColumns);
     setFilters(savedSettings.filters || initialSettings.filters);
     setActiveSwimlanes(savedSettings.activeSwimlanes || initialSettings.activeSwimlanes);
+    setPercentileSelections(
+      savedSettings.percentileSelections || initialSettings.percentileSelections
+    );
+    setCompletionCriteria(savedSettings.completionCriteria || initialSettings.completionCriteria);
   };
 
   const saveSettings = (jiraDomain, rapidView) => {
@@ -61,6 +71,8 @@ export function GlobalSettingsProvider({ children }) {
       selectedColumns,
       filters,
       activeSwimlanes,
+      percentileSelections,
+      completionCriteria,
     };
     localStorage.setItem(storageKey, JSON.stringify(settingsToSave));
   };
@@ -86,23 +98,21 @@ export function GlobalSettingsProvider({ children }) {
     selectedColumns,
     filters,
     activeSwimlanes,
+    percentileSelections,
+    completionCriteria,
   ]);
 
+  // Обновление activeColumns на основе selectedColumns
   useEffect(() => {
-    // Функция для обновления активных колонок
     const updateActiveColumns = () => {
-      // Проверка, не пустой ли массив allColumns
       if (allColumns && allColumns.length > 0) {
-        // Создание массива активных колонок с индексами на основе порядка в allColumns
         const newActiveColumns = allColumns
           .filter((column) => selectedColumns.includes(column.name))
           .map((column) => ({ name: column.name, index: allColumns.indexOf(column) }));
 
-        setActiveColumns(newActiveColumns); // Обновление состояния активных колонок
+        setActiveColumns(newActiveColumns);
       }
     };
-
-    // Вызов функции обновления активных колонок
     updateActiveColumns();
   }, [selectedColumns, allColumns]);
 
@@ -132,6 +142,10 @@ export function GlobalSettingsProvider({ children }) {
       setFilters,
       activeSwimlanes,
       setActiveSwimlanes,
+      percentileSelections,
+      setPercentileSelections,
+      completionCriteria,
+      setCompletionCriteria,
     }),
     [
       dateFormat,
@@ -158,6 +172,10 @@ export function GlobalSettingsProvider({ children }) {
       setFilters,
       activeSwimlanes,
       setActiveSwimlanes,
+      percentileSelections,
+      setPercentileSelections,
+      completionCriteria,
+      setCompletionCriteria,
     ]
   );
 
