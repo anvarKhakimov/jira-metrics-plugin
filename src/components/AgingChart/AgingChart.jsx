@@ -118,8 +118,6 @@ function AgingChart() {
     completionCriteria
   );
 
-  console.log('columnPercentiles', columnPercentiles);
-
   const annotations = useMemo(() => {
     if (percentileSelections.length === 0) {
       return [];

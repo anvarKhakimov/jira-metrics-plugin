@@ -342,16 +342,33 @@ export function calculateXPercentile(data, percentile) {
   return sortedDays[index] || 0;
 }
 
+export function calculateExactPercentile(values, percentileRank) {
+  if (!values.length) return 0;
+
+  const sortedValues = [...values].sort((a, b) => a - b);
+
+  const preciseIndex = (percentileRank / 100) * (sortedValues.length - 1);
+
+  if (Number.isInteger(preciseIndex)) {
+    return sortedValues[preciseIndex];
+  }
+
+  const lowerIndex = Math.floor(preciseIndex);
+  const upperIndex = Math.ceil(preciseIndex);
+
+  return (
+    sortedValues[lowerIndex] +
+    (sortedValues[upperIndex] - sortedValues[lowerIndex]) * (preciseIndex - lowerIndex)
+  );
+}
+
 export function calculatePercentile(values, percentileRank) {
   if (!values.length) return 0;
 
-  // Копирование и сортировка массива для получения отсортированной копии
   const sortedValues = [...values].sort((a, b) => a - b);
 
-  // Рассчет индекса процентиля
   const index = Math.ceil((percentileRank / 100) * sortedValues.length) - 1;
 
-  // Возвращение значения процентиля
   return sortedValues[index];
 }
 

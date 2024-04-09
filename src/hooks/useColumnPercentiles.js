@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { calculatePercentile } from '../utils/utils';
+import { calculateExactPercentile } from '../utils/utils';
 
 const useColumnPercentiles = (
   cfdData,
@@ -42,11 +42,14 @@ const useColumnPercentiles = (
         };
       });
 
-      const accumulatedTimes = taskDetails.map(({ accumulatedTime }) => accumulatedTime);
+      const accumulatedTimes = taskDetails
+        .map(({ accumulatedTime }) => accumulatedTime)
+        .filter((time) => time > 0)
+        .sort((a, b) => a - b);
 
       const percentileValues = percentiles.map((p) => ({
         percentile: p,
-        value: calculatePercentile(accumulatedTimes.filter(Boolean), p),
+        value: calculateExactPercentile(accumulatedTimes, p),
       }));
 
       const segments = percentileValues.map((percentileData, index) => ({
@@ -70,9 +73,9 @@ const useColumnPercentiles = (
         column: columnIndex,
         name,
         segments,
-        rawAccumulatedTimes: accumulatedTimes,
+        sortedAccumulatedTimes: accumulatedTimes, // Отсортированные и отфильтрованные значения для отладки
         percentileCalculations: percentileValues,
-        taskDetails, // Добавляем детализированные данные о лидтаймах задач
+        taskDetails,
       };
     });
   }, [cfdData.columns, displayedTasks, activeColumns, percentiles, completionCriteria]);
