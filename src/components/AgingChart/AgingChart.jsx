@@ -11,6 +11,8 @@ import {
   OutlinedInput,
   Checkbox,
   ListItemText,
+  FormGroup,
+  FormControlLabel,
 } from '@mui/material';
 import { useGlobalSettings } from '../../contexts/GlobalSettingsContext';
 import { useJiraDataContext } from '../../contexts/JiraDataContext';
@@ -45,8 +47,7 @@ function AgingChart() {
   const { tasks, displayedTasks } = useChartDataContext();
   const jiraDomain = new URL(jiraBaseUrl).origin;
 
-  // const [percentileSelections, setPercentileSelections] = useState([30, 50, 70, 85, 95]);
-  //const [completionCriteria, setCompletionCriteria] = useState('all');
+  const [showCalculationDetails, setShowCalculationDetails] = useState(false);
 
   const percentilesOptions = [30, 50, 70, 85, 95];
 
@@ -56,6 +57,10 @@ function AgingChart() {
 
   const handleCompletionCriteriaChange = (event) => {
     setCompletionCriteria(event.target.value);
+  };
+
+  const handleShowCalculationDetailsChange = (event) => {
+    setShowCalculationDetails(event.target.checked);
   };
 
   const generateAnnotationsFromPercentiles = (columnPercentiles) =>
@@ -295,16 +300,35 @@ function AgingChart() {
           <MenuItem value="all">All Columns</MenuItem>
         </Select>
       </FormControl>
-      {isDebug && tasksInLastColumn && (
+      <FormGroup>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={showCalculationDetails}
+              onChange={handleShowCalculationDetailsChange}
+              name="showCalculationDetails"
+            />
+          }
+          label="Show calculation details"
+        />
+      </FormGroup>
+      {showCalculationDetails && (
         <>
-          <br />
+          <h3>General</h3>
           <a
             href={generateJiraIssuesUrl(tasksInLastColumn, jiraDomain)}
             target="_blank"
             rel="noreferrer"
           >
-            Tasks For Percentilies
+            Percentile Tasks Overview
           </a>
+          <ul>
+            {percentileData.map((percentile, index) => (
+              <li key={index}>
+                {percentile.label.text}: {percentile.value} days
+              </li>
+            ))}
+          </ul>
           <ColumnPercentilesDetails columnPercentiles={columnPercentiles} />
         </>
       )}

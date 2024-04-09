@@ -4,11 +4,13 @@ function ColumnPercentilesDetails({ columnPercentiles }) {
   const msInDay = 86400000;
   return (
     <div>
+      <h3>Columns</h3>
       {columnPercentiles.map(
         ({ column, name, segments, taskDetails, sortedAccumulatedTimes }, columnIndex) => (
           <div key={columnIndex} style={{ marginBottom: '40px' }}>
-            <h3>Column: {name}</h3>
-            <h4>Tasks Details: ({taskDetails.length})</h4>
+            <h4>
+              {name}: ({taskDetails.length})
+            </h4>
             <table>
               <thead>
                 <tr>
