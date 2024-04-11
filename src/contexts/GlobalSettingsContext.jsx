@@ -22,6 +22,7 @@ const initialSettings = {
   activeSwimlanes: [],
   percentileSelections: [30, 50, 70, 85, 95],
   completionCriteria: 'last',
+  dataSourceOrigin: 'server',
 };
 
 export function GlobalSettingsProvider({ children }) {
@@ -42,6 +43,7 @@ export function GlobalSettingsProvider({ children }) {
     initialSettings.percentileSelections
   );
   const [completionCriteria, setCompletionCriteria] = useState(initialSettings.completionCriteria);
+  const [dataSourceOrigin, setDataSourceOrigin] = useState(initialSettings.dataSourceOrigin);
 
   const loadSettings = (jiraDomain, rapidView) => {
     const storageKey = getStorageKey(jiraDomain, rapidView);
@@ -146,6 +148,8 @@ export function GlobalSettingsProvider({ children }) {
       setPercentileSelections,
       completionCriteria,
       setCompletionCriteria,
+      dataSourceOrigin,
+      setDataSourceOrigin,
     }),
     [
       dateFormat,
@@ -176,6 +180,8 @@ export function GlobalSettingsProvider({ children }) {
       setPercentileSelections,
       completionCriteria,
       setCompletionCriteria,
+      dataSourceOrigin,
+      setDataSourceOrigin,
     ]
   );
 

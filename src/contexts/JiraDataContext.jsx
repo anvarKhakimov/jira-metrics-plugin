@@ -21,6 +21,7 @@ export function JiraDataProvider({ children }) {
     setFilters,
     activeSwimlanes,
     setActiveSwimlanes,
+    dataSourceOrigin,
   } = useGlobalSettings();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -55,6 +56,11 @@ export function JiraDataProvider({ children }) {
           jiraBaseUrl,
           rapidView,
         });
+        return;
+      }
+
+      if (dataSourceOrigin === 'file') {
+        debugLog('Board config: Cannot load because the data source is set by file.');
         return;
       }
 
@@ -95,6 +101,11 @@ export function JiraDataProvider({ children }) {
         boardConfig,
         activeSwimlanes,
       });
+      return;
+    }
+
+    if (dataSourceOrigin === 'file') {
+      debugLog('CFD: Cannot load because the data source is set by file.');
       return;
     }
 
@@ -148,6 +159,9 @@ export function JiraDataProvider({ children }) {
       updateActiveSwimlanes,
       loadCFDData,
       updateUserFilters,
+      setBoardConfig,
+      setCFDData,
+      setAllSwimlanes,
     }),
     [
       isLoading,

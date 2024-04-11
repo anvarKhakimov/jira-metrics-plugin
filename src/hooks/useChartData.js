@@ -174,6 +174,8 @@ export default function useChartData(boardConfig, cfdData, updateUserFilters) {
 
   useEffect(() => {
     window.debugData = {
+      boardConfig,
+      cfdData,
       tasks,
       displayedTasks,
       histogramData,
@@ -188,6 +190,8 @@ export default function useChartData(boardConfig, cfdData, updateUserFilters) {
       activeColumns,
     };
   }, [
+    boardConfig,
+    cfdData,
     tasks,
     displayedTasks,
     histogramData,

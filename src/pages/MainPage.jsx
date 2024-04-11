@@ -11,6 +11,8 @@ import CumulativeDiagram from '../components/CumulativeDiagram/CumulativeDiagram
 import AgingChart from '../components/AgingChart/AgingChart';
 import { sendPageViewEvent } from '../utils/google-analytics';
 import { isDebug } from '../utils/utils';
+import ExportDataButton from '../components/ExportDataButton';
+import ImportDataInput from '../components/ImportDataInput';
 
 function TabPanel(props) {
   const { children, value, index } = props;
@@ -114,6 +116,12 @@ export default function MainPage() {
       <TabPanel value={value} index={4}>
         <TasksTable />
       </TabPanel>
+      {isDebug && (
+        <>
+          <ExportDataButton />
+          <ImportDataInput />
+        </>
+      )}
     </ChartDataProvider>
   );
 }
