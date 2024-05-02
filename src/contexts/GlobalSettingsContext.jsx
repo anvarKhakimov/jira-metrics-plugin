@@ -20,6 +20,9 @@ const initialSettings = {
   selectedColumns: [],
   filters: [],
   activeSwimlanes: [],
+  percentileSelections: [30, 50, 70, 85, 95],
+  completionCriteria: 'last',
+  dataSourceOrigin: 'server',
 };
 
 export function GlobalSettingsProvider({ children }) {
@@ -32,8 +35,15 @@ export function GlobalSettingsProvider({ children }) {
   const [timeframeTo, setTimeframeTo] = useState(initialSettings.timeframeTo);
   const [resolution, setResolution] = useState(initialSettings.resolution);
   const [selectedColumns, setSelectedColumns] = useState(initialSettings.selectedColumns); // @TODO rename active
+  const [allColumns, setAllColumns] = useState([]);
+  const [activeColumns, setActiveColumns] = useState([]);
   const [filters, setFilters] = useState(initialSettings.filters);
   const [activeSwimlanes, setActiveSwimlanes] = useState(initialSettings.activeSwimlanes);
+  const [percentileSelections, setPercentileSelections] = useState(
+    initialSettings.percentileSelections
+  );
+  const [completionCriteria, setCompletionCriteria] = useState(initialSettings.completionCriteria);
+  const [dataSourceOrigin, setDataSourceOrigin] = useState(initialSettings.dataSourceOrigin);
 
   const loadSettings = (jiraDomain, rapidView) => {
     const storageKey = getStorageKey(jiraDomain, rapidView);
@@ -46,6 +56,10 @@ export function GlobalSettingsProvider({ children }) {
     setSelectedColumns(savedSettings.selectedColumns || initialSettings.selectedColumns);
     setFilters(savedSettings.filters || initialSettings.filters);
     setActiveSwimlanes(savedSettings.activeSwimlanes || initialSettings.activeSwimlanes);
+    setPercentileSelections(
+      savedSettings.percentileSelections || initialSettings.percentileSelections
+    );
+    setCompletionCriteria(savedSettings.completionCriteria || initialSettings.completionCriteria);
   };
 
   const saveSettings = (jiraDomain, rapidView) => {
@@ -59,6 +73,8 @@ export function GlobalSettingsProvider({ children }) {
       selectedColumns,
       filters,
       activeSwimlanes,
+      percentileSelections,
+      completionCriteria,
     };
     localStorage.setItem(storageKey, JSON.stringify(settingsToSave));
   };
@@ -84,7 +100,23 @@ export function GlobalSettingsProvider({ children }) {
     selectedColumns,
     filters,
     activeSwimlanes,
+    percentileSelections,
+    completionCriteria,
   ]);
+
+  // Обновление activeColumns на основе selectedColumns
+  useEffect(() => {
+    const updateActiveColumns = () => {
+      if (allColumns && allColumns.length > 0) {
+        const newActiveColumns = allColumns
+          .filter((column) => selectedColumns.includes(column.name))
+          .map((column) => ({ name: column.name, index: allColumns.indexOf(column) }));
+
+        setActiveColumns(newActiveColumns);
+      }
+    };
+    updateActiveColumns();
+  }, [selectedColumns, allColumns]);
 
   const contextValue = useMemo(
     () => ({
@@ -104,10 +136,20 @@ export function GlobalSettingsProvider({ children }) {
       setResolution,
       selectedColumns,
       setSelectedColumns,
+      allColumns,
+      setAllColumns,
+      activeColumns,
+      setActiveColumns,
       filters,
       setFilters,
       activeSwimlanes,
       setActiveSwimlanes,
+      percentileSelections,
+      setPercentileSelections,
+      completionCriteria,
+      setCompletionCriteria,
+      dataSourceOrigin,
+      setDataSourceOrigin,
     }),
     [
       dateFormat,
@@ -126,10 +168,20 @@ export function GlobalSettingsProvider({ children }) {
       setResolution,
       selectedColumns,
       setSelectedColumns,
+      allColumns,
+      setAllColumns,
+      activeColumns,
+      setActiveColumns,
       filters,
       setFilters,
       activeSwimlanes,
       setActiveSwimlanes,
+      percentileSelections,
+      setPercentileSelections,
+      completionCriteria,
+      setCompletionCriteria,
+      dataSourceOrigin,
+      setDataSourceOrigin,
     ]
   );
 

@@ -16,11 +16,14 @@ export function JiraDataProvider({ children }) {
     setJiraBaseUrl,
     rapidView,
     setRapidView,
+    setAllColumns,
     filters,
     setFilters,
     activeSwimlanes,
     setActiveSwimlanes,
+    dataSourceOrigin,
   } = useGlobalSettings();
+
   const [isLoading, setIsLoading] = useState(false);
   const [boardConfig, setBoardConfig] = useState(null);
   const [cfdData, setCFDData] = useState(null);
@@ -53,6 +56,11 @@ export function JiraDataProvider({ children }) {
           jiraBaseUrl,
           rapidView,
         });
+        return;
+      }
+
+      if (dataSourceOrigin === 'file') {
+        debugLog('Board config: Cannot load because the data source is set by file.');
         return;
       }
 
@@ -96,6 +104,11 @@ export function JiraDataProvider({ children }) {
       return;
     }
 
+    if (dataSourceOrigin === 'file') {
+      debugLog('CFD: Cannot load because the data source is set by file.');
+      return;
+    }
+
     setIsLoading(true);
 
     const cfdDataLoaded = await fetchCFDData(
@@ -108,6 +121,8 @@ export function JiraDataProvider({ children }) {
     debugLog('CFD data loaded', cfdDataLoaded);
     setCFDData(cfdDataLoaded);
     debugLog('Set cfdData');
+
+    setAllColumns(cfdDataLoaded.columns);
 
     setIsLoading(false);
   }, [boardConfig, filters, activeSwimlanes]);
@@ -144,6 +159,9 @@ export function JiraDataProvider({ children }) {
       updateActiveSwimlanes,
       loadCFDData,
       updateUserFilters,
+      setBoardConfig,
+      setCFDData,
+      setAllSwimlanes,
     }),
     [
       isLoading,

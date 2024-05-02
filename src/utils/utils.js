@@ -6,20 +6,60 @@ export function getColumnIndexByName(columns, columnName) {
   return columns.findIndex((column) => column.name === columnName);
 }
 
-export function convertTimeToResolution(timeInMilliseconds, resolution) {
-  const timeInDays = timeInMilliseconds / 86400000; // Конвертация из миллисекунд в дни
+// Получение индекса по имени колонки
+export function getColumnIndexByName2(columnName, activeColumns) {
+  const column = activeColumns.find((c) => c.name === columnName);
+  return column ? column.index : -1;
+}
 
+// Получение имени колонки по индексу
+export function getColumnNameByIndex(columnIndex, activeColumns) {
+  const column = activeColumns.find((c) => c.index === columnIndex);
+  return column ? column.name : undefined;
+}
+
+function millisecondsToWeeks(milliseconds) {
+  return Math.ceil(milliseconds / (7 * 86400000));
+}
+
+function millisecondsToMonths(milliseconds) {
+  return Math.ceil(milliseconds / (30 * 86400000));
+}
+
+function millisecondsToTotalDays(milliseconds) {
+  return Math.ceil(milliseconds / 86400000);
+}
+
+// @TODO убрать default, добавить days
+export function convertTimeToResolution(timeInMilliseconds, resolution = 'day') {
   switch (resolution) {
+    case 'day':
+      return millisecondsToTotalDays(timeInMilliseconds);
     case 'week':
-      return Math.ceil(timeInDays / 7);
+      return millisecondsToWeeks(timeInMilliseconds);
     case 'two-weeks':
-      return Math.ceil(timeInDays / 14);
+      return millisecondsToWeeks(timeInMilliseconds) / 2;
     case 'month':
-      return Math.ceil(timeInDays / 30);
+      return millisecondsToMonths(timeInMilliseconds);
     default:
-      return Math.ceil(timeInDays); // По умолчанию время в днях
+      return millisecondsToTotalDays(timeInMilliseconds);
   }
 }
+
+// export function convertTimeToResolution(timeInMilliseconds, resolution) {
+//   const timeInDays = timeInMilliseconds / 86400000; // Конвертация из миллисекунд в дни
+
+//   switch (resolution) {
+//     case 'week':
+//       return Math.ceil(timeInDays / 7);
+//     case 'two-weeks':
+//       return Math.ceil(timeInDays / 14);
+//     case 'month':
+//       return Math.ceil(timeInDays / 30);
+//     default:
+//       return Math.ceil(timeInDays); // По умолчанию время в днях
+//   }
+// }
 
 /**
  * Преобразует количество миллисекунд в удобочитаемый текстовый формат, включая месяцы, недели, дни, часы, минуты и секунды.
@@ -41,7 +81,7 @@ export function convertTimeToResolution(timeInMilliseconds, resolution) {
 
 export function durationToReadableFormat(milliseconds, format = 'default') {
   const DAYS_PER_WEEK = 7;
-  const DAYS_PER_MONTH = 30; // Примерное значение
+  const DAYS_PER_MONTH = 30;
   const HOURS_PER_DAY = 24;
   const MINUTES_PER_HOUR = 60;
   const SECONDS_PER_MINUTE = 60;
@@ -69,20 +109,21 @@ export function durationToReadableFormat(milliseconds, format = 'default') {
 
   const seconds = Math.floor(remainingMilliseconds / MILLISECONDS_PER_SECOND);
 
-  // Пересчет общего количества дней для формата "в днях"
-  const totalDays = months * DAYS_PER_MONTH + weeks * DAYS_PER_WEEK + days;
-  // Пересчет общего количества недель для формата "в неделях"
-  const totalWeeks = (months * DAYS_PER_MONTH + weeks * DAYS_PER_WEEK + days) / DAYS_PER_WEEK;
-
   switch (format) {
     case 'hours': {
-      return `${Math.floor(milliseconds / MILLISECONDS_PER_HOUR)} hour${Math.floor(milliseconds / MILLISECONDS_PER_HOUR) !== 1 ? 's' : ''}`;
+      return `${Math.floor(milliseconds / MILLISECONDS_PER_HOUR)} hour${
+        Math.floor(milliseconds / MILLISECONDS_PER_HOUR) !== 1 ? 's' : ''
+      }`;
     }
     case 'days': {
-      return `${totalDays} day${totalDays !== 1 ? 's' : ''}`;
+      return `${millisecondsToTotalDays(milliseconds)} day${
+        millisecondsToTotalDays(milliseconds) !== 1 ? 's' : ''
+      }`;
     }
     case 'weeks': {
-      return `${totalWeeks.toFixed(0)} week${totalWeeks.toFixed(0) !== '1' ? 's' : ''}`;
+      return `${millisecondsToWeeks(milliseconds)} week${
+        millisecondsToWeeks(milliseconds) !== 1 ? 's' : ''
+      }`;
     }
     case 'timestamp': {
       return `${milliseconds}`;
@@ -208,6 +249,13 @@ export function filterTaskByTime(task, columns, timeframeFrom, timeframeTo) {
   });
 }
 
+export function calculateLeadTime(taskDetails, selectedColumnIndices) {
+  return selectedColumnIndices.reduce((total, columnIndex) => {
+    const duration = taskDetails.durations[columnIndex] || 0;
+    return total + duration;
+  }, 0);
+}
+
 /**
  * Фильтрует и подготавливает задачи на основе заданных критериев.
  * Возвращает объект, где ключи - это идентификаторы задач, а значения - детали задач,
@@ -228,16 +276,13 @@ export function filterTaskByTime(task, columns, timeframeFrom, timeframeTo) {
  * }
  */
 export function prepareFilteredTasks(tasks, columns, selectedColumns, timeframeFrom, timeframeTo) {
+  const selectedColumnIndices = selectedColumns.map((columnName) =>
+    getColumnIndexByName(columns, columnName)
+  );
+
   return Object.entries(tasks).reduce((acc, [taskKey, taskDetails]) => {
     if (filterTaskByTime(taskDetails, columns, timeframeFrom, timeframeTo)) {
-      const selectedColumnIndices = selectedColumns.map((columnName) =>
-        getColumnIndexByName(columns, columnName)
-      );
-
-      const leadTime = selectedColumnIndices.reduce((total, columnIndex) => {
-        const duration = taskDetails.durations[columnIndex] || 0;
-        return total + duration;
-      }, 0);
+      const leadTime = calculateLeadTime(taskDetails, selectedColumnIndices);
 
       acc[taskKey] = {
         ...taskDetails,
@@ -264,7 +309,7 @@ export function prepareFilteredTasks(tasks, columns, selectedColumns, timeframeF
  *   ...
  * ]
  */
-export function prepareHistogramArray(filteredTasks, resolution) {
+export function prepareHistogramArray(filteredTasks, resolution = 'day') {
   const localHistogramData = {};
 
   Object.entries(filteredTasks).forEach(([taskId, taskDetails]) => {
@@ -288,6 +333,105 @@ export function prepareHistogramArray(filteredTasks, resolution) {
     count: data.count,
     tasks: data.tasks,
   }));
+}
+
+export function calculateXPercentile(data, percentile) {
+  const weightedDays = data.flatMap((item) => Array(item.count).fill(item.days));
+  const sortedDays = weightedDays.sort((a, b) => a - b);
+  const index = Math.ceil((percentile / 100) * sortedDays.length) - 1;
+  return sortedDays[index] || 0;
+}
+
+export function calculateExactPercentile(values, percentileRank) {
+  if (!values.length) return 0;
+
+  const sortedValues = [...values].sort((a, b) => a - b);
+
+  const preciseIndex = (percentileRank / 100) * (sortedValues.length - 1);
+
+  if (Number.isInteger(preciseIndex)) {
+    return sortedValues[preciseIndex];
+  }
+
+  const lowerIndex = Math.floor(preciseIndex);
+  const upperIndex = Math.ceil(preciseIndex);
+
+  return (
+    sortedValues[lowerIndex] +
+    (sortedValues[upperIndex] - sortedValues[lowerIndex]) * (preciseIndex - lowerIndex)
+  );
+}
+
+export function calculatePercentile(values, percentileRank) {
+  if (!values.length) return 0;
+
+  const sortedValues = [...values].sort((a, b) => a - b);
+
+  const index = Math.ceil((percentileRank / 100) * sortedValues.length) - 1;
+
+  return sortedValues[index];
+}
+
+export function calculateTimeInColumns(task, columns, now) {
+  const durations = {};
+
+  Object.entries(task.starts).forEach(([columnId, startTimes]) => {
+    const endTimes = task.ends[columnId] || [];
+    const columnName = columns[columnId].name; // Получаем название колонки из массива columns
+
+    //console.log(task, columnId, columnName, startTimes);
+
+    let totalDuration = 0;
+    startTimes.forEach((startTime, index) => {
+      let endTime = endTimes[index] || now;
+      if (columnId === columns.length - 1) {
+        if (index === startTimes.length - 1 && !endTimes[index]) {
+          endTime = startTime;
+        }
+      }
+      totalDuration += endTime - startTime;
+    });
+
+    if (totalDuration > 0) {
+      durations[columnName] = totalDuration; // Используем columnName в качестве ключа объекта durations
+    }
+  });
+
+  return durations;
+}
+
+/**
+ * Создаёт URL для запроса задач в Jira на основе предоставленных задач.
+ * @param {Object|Array} tasks - Объект или массив задач. Если это объект, используются его ключи.
+ * @param {string} jiraDomain - Домен Jira.
+ * @returns {string} Сформированный URL для запроса задач.
+ */
+export function generateJiraIssuesUrl(tasks, jiraDomain) {
+  // Преобразование входных данных в массив ключей задач
+  const taskKeys = Array.isArray(tasks) ? tasks : Object.keys(tasks);
+
+  // Формирование части URL с ключами задач, с использованием encodeURIComponent
+  const jqlQuery = `issueKey in (${taskKeys.map((key) => encodeURIComponent(key)).join(',')})`;
+
+  // Возвращение полного URL
+  return `${jiraDomain}/issues/?jql=${jqlQuery}`;
+}
+
+/**
+ * Определяет, находится ли задача в текущей колонке.
+ * @param {Object} task - Задача для проверки.
+ * @param {number} columnIndex - Индекс текущей колонки.
+ * @param {Array} allColumns - Массив всех колонок.
+ * @returns {boolean} Возвращает true, если задача находится в текущей колонке.
+ */
+export function isTaskInCurrentColumn(task, columnIndex, allColumns) {
+  const startTimes = task.starts[columnIndex] || [];
+  const endTimes = task.ends[columnIndex] || [];
+  const lastStartTime = startTimes.length > 0 ? Math.max(...startTimes) : null;
+  return (
+    lastStartTime !== null &&
+    (endTimes.length === 0 || lastStartTime >= endTimes[endTimes.length - 1])
+  );
 }
 
 export function debugLog(...messages) {

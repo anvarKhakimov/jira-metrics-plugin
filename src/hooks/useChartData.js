@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useGlobalSettings } from '../contexts/GlobalSettingsContext';
-import { prepareFilteredTasks, prepareHistogramArray, debugLog } from '../utils/utils';
+import {
+  prepareFilteredTasks,
+  prepareHistogramArray,
+  calculateTimeInColumns,
+  debugLog,
+} from '../utils/utils';
 
 /**
  * useChartData - Хук для управления данными диаграммы времени выполнения задач.
@@ -14,8 +19,15 @@ import { prepareFilteredTasks, prepareHistogramArray, debugLog } from '../utils/
  */
 
 export default function useChartData(boardConfig, cfdData, updateUserFilters) {
-  const { timeframeFrom, timeframeTo, resolution, selectedColumns, setSelectedColumns } =
-    useGlobalSettings();
+  const {
+    timeframeFrom,
+    timeframeTo,
+    resolution,
+    selectedColumns,
+    setSelectedColumns,
+    allColumns,
+    activeColumns,
+  } = useGlobalSettings();
   const [tasks, setTasks] = useState({});
   const [displayedTasks, setDisplayedTasks] = useState({});
 
@@ -102,6 +114,8 @@ export default function useChartData(boardConfig, cfdData, updateUserFilters) {
 
       // Расчет общей продолжительности нахождения задачи в каждой колонке с учетом новой логики
       Object.values(tasksData).forEach((task) => {
+        task.timeInColumns = calculateTimeInColumns(task, cfdData.columns, now);
+
         task.durations = {};
         Object.entries(task.starts).forEach(([column, startTimes]) => {
           const endTimes = task.ends[column] || [];
@@ -160,6 +174,8 @@ export default function useChartData(boardConfig, cfdData, updateUserFilters) {
 
   useEffect(() => {
     window.debugData = {
+      boardConfig,
+      cfdData,
       tasks,
       displayedTasks,
       histogramData,
@@ -170,8 +186,12 @@ export default function useChartData(boardConfig, cfdData, updateUserFilters) {
       allFilters,
       activeFilters,
       resolution,
+      allColumns,
+      activeColumns,
     };
   }, [
+    boardConfig,
+    cfdData,
     tasks,
     displayedTasks,
     histogramData,
@@ -182,6 +202,8 @@ export default function useChartData(boardConfig, cfdData, updateUserFilters) {
     allFilters,
     activeFilters,
     resolution,
+    allColumns,
+    activeColumns,
   ]);
 
   return {
