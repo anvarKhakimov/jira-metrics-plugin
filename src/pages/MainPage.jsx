@@ -116,12 +116,12 @@ export default function MainPage() {
       <TabPanel value={value} index={4}>
         <TasksTable />
       </TabPanel>
-      {isDebug && (
+      {/* {isDebug && (
         <>
           <ExportDataButton />
           <ImportDataInput />
         </>
-      )}
+      )} */}
     </ChartDataProvider>
   );
 }

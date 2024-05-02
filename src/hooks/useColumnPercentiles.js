@@ -5,8 +5,8 @@ const useColumnPercentiles = (
   cfdData,
   activeColumns,
   displayedTasks,
-  percentilesList = [],
-  completionCriteria
+  completionCriteria,
+  percentilesList = []
 ) => {
   const msInDay = 86400000;
   const allowedPercentiles = [30, 50, 70, 85, 95];

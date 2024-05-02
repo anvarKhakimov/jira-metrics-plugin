@@ -27,7 +27,7 @@ import useColumnPercentiles from '../../hooks/useColumnPercentiles';
 import Filters from '../Filters/Filters';
 import ColumnPercentilesDetails from './ColumnPercentilesDetails';
 
-import { isDebug, generateJiraIssuesUrl } from '../../utils/utils';
+import { generateJiraIssuesUrl } from '../../utils/utils';
 
 AnnotationsModule(Highcharts);
 
@@ -128,8 +128,8 @@ function AgingChart() {
     cfdData,
     activeColumns,
     tasksInLastColumn,
-    percentileSelections,
-    completionCriteria
+    completionCriteria,
+    percentileSelections
   );
 
   const annotations = useMemo(() => {
@@ -192,8 +192,9 @@ function AgingChart() {
               color: 'fff',
             },
             formatter() {
-              return this.point.taskCount > 1
-                ? `<span style="stroke: none; color: #ffffff">${this.point.taskCount}</span>`
+              const { taskCount } = this.point;
+              return taskCount > 1
+                ? `<span style="stroke: none; color: #ffffff">${taskCount}</span>`
                 : '';
             },
           },
@@ -225,12 +226,11 @@ function AgingChart() {
           width: '300px',
         },
         formatter() {
-          const tasks = this.point.tasks.map((task) => {
-            const taskId = task.taskKey;
-            const agingTime = task.agingTime;
-            return `<a href="${jiraDomain}/browse/${taskId}" target="_blank">${taskId}</a>: ${agingTime} days`;
-          });
-          return `${tasks.join('<br/>')}`;
+          const tasksList = this.point.tasks.map(
+            ({ taskKey, agingTime }) =>
+              `<a href="${jiraDomain}/browse/${taskKey}" target="_blank">${taskKey}</a>: ${agingTime} days`
+          );
+          return `${tasksList.join('<br/>')}`;
         },
       },
       plotOptions: {
@@ -323,8 +323,8 @@ function AgingChart() {
             Percentile Tasks Overview
           </a>
           <ul>
-            {percentileData.map((percentile, index) => (
-              <li key={index}>
+            {percentileData.map((percentile) => (
+              <li key={percentile.label.text}>
                 {percentile.label.text}: {percentile.value} days
               </li>
             ))}

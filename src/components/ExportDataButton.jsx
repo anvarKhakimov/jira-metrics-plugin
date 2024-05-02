@@ -50,5 +50,9 @@ export default function ExportDataButton() {
     downloadAnchorNode.remove();
   };
 
-  return <button onClick={handleExport}>Экспортировать данные</button>;
+  return (
+    <button type="button" onClick={handleExport}>
+      Экспортировать данные
+    </button>
+  );
 }
