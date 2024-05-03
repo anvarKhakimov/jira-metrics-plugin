@@ -31,7 +31,7 @@ function TabPanel(props) {
 export default function MainPage() {
   const { isLoading, boardConfig, cfdData, updateUserFilters } = useJiraDataContext();
   const [searchParams, setSearchParams] = useSearchParams();
-  const tabNames = ['leadtime', 'agingChart', 'cfd', 'predictability', 'tasks'];
+  const tabNames = ['cycleTime', 'agingChart', 'cfd', 'predictability', 'tasks'];
   const tabParam = searchParams.get('tab');
   const [value, setValue] = useState(Math.max(tabNames.indexOf(tabParam), 0));
 
@@ -87,7 +87,7 @@ export default function MainPage() {
         elevation={0}
       >
         <Tabs value={value} onChange={handleChange}>
-          <Tab label="Lead Time" />
+          <Tab label="Cycle Time" />
           <Tab label="Aging Chart" />
           <Tab label="CFD" />
           <Tab label="Predictability" />

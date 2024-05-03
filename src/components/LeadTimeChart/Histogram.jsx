@@ -32,7 +32,7 @@ function Histogram({ histogramData }) {
 
   return (
     <div>
-      <h3>Lead Time Histogram</h3>
+      <h3>Cycle Time Histogram</h3>
 
       <BarChart
         width={chartWidth}
@@ -41,7 +41,7 @@ function Histogram({ histogramData }) {
         margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
       >
         <CartesianGrid strokeDasharray="2 2" stroke="rgba(0, 0, 0, 0.1)" />
-        <XAxis dataKey="days" label={{ value: 'Lead Time (days)', position: 'bottom' }} />
+        <XAxis dataKey="days" label={{ value: 'Cycle Time (days)', position: 'bottom' }} />
         <YAxis
           width={40} // устанавливаем фиксированную ширину оси
           label={{

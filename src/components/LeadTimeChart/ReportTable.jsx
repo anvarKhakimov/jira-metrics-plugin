@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 function ReportTable({ histogramData, jiraBaseUrl }) {
   const jiraDomain = new URL(jiraBaseUrl).origin;
@@ -10,9 +10,9 @@ function ReportTable({ histogramData, jiraBaseUrl }) {
     <table>
       <thead>
         <tr>
-          <th>Lead Time</th>
-          <th>Number of Tasks</th>
-          <th>Backlog Tickets</th>
+          <th>Cycle Time</th>
+          <th>Number of Issues</th>
+          <th>Backlog Issues</th>
         </tr>
       </thead>
       <tbody>
@@ -23,7 +23,7 @@ function ReportTable({ histogramData, jiraBaseUrl }) {
             <td>
               {item.tasks.map((task, taskIndex) => (
                 <React.Fragment key={task}>
-                  {taskIndex > 0 ? ", " : ""}
+                  {taskIndex > 0 ? ', ' : ''}
                   <a
                     href={`${jiraDomain}/browse/${task}`}
                     target="_blank"

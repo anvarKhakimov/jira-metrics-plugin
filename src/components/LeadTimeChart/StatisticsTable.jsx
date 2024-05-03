@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   Table,
   TableBody,
@@ -8,14 +8,11 @@ import {
   TableRow,
   Paper,
   Box,
-} from "@mui/material";
+} from '@mui/material';
 
 function StatisticsTable({ histogramData }) {
   // Расчет среднего значения лидтайма
-  const totalLeadTime = histogramData.reduce(
-    (sum, data) => sum + data.leadTime * data.count,
-    0
-  );
+  const totalLeadTime = histogramData.reduce((sum, data) => sum + data.leadTime * data.count, 0);
   const totalCount = histogramData.reduce((sum, data) => sum + data.count, 0);
   const mean = totalCount ? totalLeadTime / totalCount : 0;
 
@@ -30,7 +27,7 @@ function StatisticsTable({ histogramData }) {
   };
 
   return (
-    <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
+    <Box sx={{ display: 'flex', justifyContent: 'flex-start', mt: 2 }}>
       <TableContainer component={Paper} sx={{ maxWidth: 400 }}>
         <Table aria-label="simple table">
           <TableHead>
@@ -42,22 +39,20 @@ function StatisticsTable({ histogramData }) {
           <TableBody>
             <TableRow>
               <TableCell component="th" scope="row">
-                Total Tasks
+                Total Issues
               </TableCell>
               <TableCell align="right">{totalCount}</TableCell>
             </TableRow>
             <TableRow>
               <TableCell component="th" scope="row">
-                Mean Lead Time
+                Average Value
               </TableCell>
               <TableCell align="right">{mean.toFixed(2)}</TableCell>
             </TableRow>
             {[50, 75, 80, 85, 90, 95, 100].map((percentile) => (
               <TableRow key={percentile}>
                 <TableCell>{percentile}th Percentile</TableCell>
-                <TableCell align="right">
-                  {calculatePercentile(percentile)}
-                </TableCell>
+                <TableCell align="right">{calculatePercentile(percentile)}</TableCell>
               </TableRow>
             ))}
           </TableBody>

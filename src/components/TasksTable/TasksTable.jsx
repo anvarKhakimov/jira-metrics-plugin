@@ -161,7 +161,7 @@ function TasksTable() {
                   direction={orderBy === 'leadTime' ? order : 'asc'}
                   onClick={() => handleSortRequest('leadTime')}
                 >
-                  Σ Lead Time
+                  Σ Cycle Time
                 </TableSortLabel>
               </TableCell>
               {columnsInOrder.map((column) => (
