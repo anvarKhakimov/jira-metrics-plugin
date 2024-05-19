@@ -20,8 +20,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     const dataForTab = tabsData[sender.tab.id];
     if (dataForTab) {
       sendResponse(dataForTab);
-      delete tabsData[sender.tab.id]; // Очистить временные данные после их передачи
+      delete tabsData[sender.tab.id];
     }
   }
-  return true; // для асинхронного ответа
+  return true;
 });

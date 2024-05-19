@@ -1,0 +1,22 @@
+.jmp-button {
+  display: inline-block;
+  align-items: center;
+  padding: 0 10px;
+  height: 32px;
+  background-color: rgb(222, 235, 255);
+  color: var(--ds-text, #172b4d);
+  border: none;
+  border-radius: 3px;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.jmp-button:hover {
+  background-color: rgb(200, 220, 250);
+}
+
+.jmp-button:active,
+.jmp-button:focus {
+  outline: none;
+}
