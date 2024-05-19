@@ -22,8 +22,14 @@
   },
   "content_scripts": [
     {
-      "matches": ["http://*/secure/RapidBoard.jspa?*", "https://*/secure/RapidBoard.jspa?*"],
-      "js": ["js/content.js"]
+      "matches": [
+        "http://*/secure/RapidBoard.jspa?*",
+        "https://*/secure/RapidBoard.jspa?*",
+        "https://*/jira/software/projects/*/boards/*",
+        "https://*/jira/software/c/projects/*"
+      ],
+      "js": ["js/content.js"],
+      "css": ["assets/styles.css"]
     }
   ]
 }
