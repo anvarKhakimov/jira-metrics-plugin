@@ -164,7 +164,6 @@ export function calculateHistogramData(
 ) {
   const histogramData = {};
 
-  // Рассчитать лидтайм для каждой задачи
   Object.entries(tasks).forEach(([taskKey, taskDetails]) => {
     const selectedColumnIndices = selectedColumns.map((columnName) =>
       getColumnIndexByName(columns, columnName, taskDetails)
@@ -377,9 +376,7 @@ export function calculateTimeInColumns(task, columns, now) {
 
   Object.entries(task.starts).forEach(([columnId, startTimes]) => {
     const endTimes = task.ends[columnId] || [];
-    const columnName = columns[columnId].name; // Получаем название колонки из массива columns
-
-    //console.log(task, columnId, columnName, startTimes);
+    const columnName = columns[columnId].name;
 
     let totalDuration = 0;
     startTimes.forEach((startTime, index) => {
@@ -393,7 +390,7 @@ export function calculateTimeInColumns(task, columns, now) {
     });
 
     if (totalDuration > 0) {
-      durations[columnName] = totalDuration; // Используем columnName в качестве ключа объекта durations
+      durations[columnName] = totalDuration;
     }
   });
 

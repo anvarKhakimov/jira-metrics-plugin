@@ -32,9 +32,10 @@ export function JiraDataProvider({ children }) {
   // const [activeSwimlanes, setActiveSwimlanes] = useState([]);
 
   const query = useQuery();
+  const protocol = query.get('protocol') || 'https:';
   const hostname = query.get('host');
   const port = query.get('port');
-  const baseUrl = port ? `https://${hostname}:${port}` : `https://${hostname}`;
+  const baseUrl = port ? `${protocol}//${hostname}:${port}` : `${protocol}//${hostname}`;
   const rapidViewParam = query.get('rapidView');
 
   useEffect(() => {
@@ -71,7 +72,7 @@ export function JiraDataProvider({ children }) {
       setBoardConfig(boardData);
       debugLog('Set boardConfig', boardData);
 
-      const newAllSwimlanes = boardData.swimlanesConfig.swimlanes || [];
+      const newAllSwimlanes = boardData.currentViewConfig.swimlanes || [];
       setAllSwimlanes(newAllSwimlanes);
 
       setActiveSwimlanes((currentActiveSwimlanes) => {
