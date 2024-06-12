@@ -146,8 +146,8 @@ export default function useChartData(boardConfig, cfdData, updateUserFilters) {
       setTasks(tasksData);
 
       // Установка фильтров из boardConfig
-      if (boardConfig.quickFilterConfig && boardConfig.quickFilterConfig.quickFilters.length > 0) {
-        setAllFilters(boardConfig.quickFilterConfig.quickFilters);
+      if (boardConfig.currentViewConfig && boardConfig.currentViewConfig.quickFilters.length > 0) {
+        setAllFilters(boardConfig.currentViewConfig.quickFilters);
       }
     }
   }, [cfdData, boardConfig, resolution]);
