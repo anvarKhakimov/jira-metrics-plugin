@@ -9,6 +9,7 @@ import PredictabilityChart from '../components/PredictabilityChart/Predictabilit
 import TasksTable from '../components/TasksTable/TasksTable';
 import CumulativeDiagram from '../components/CumulativeDiagram/CumulativeDiagram';
 import AgingChart from '../components/AgingChart/AgingChart';
+import ThroughputChart from '../components/ThroughputChart/ThroughputChart';
 import { sendPageViewEvent } from '../utils/google-analytics';
 import { isDebug } from '../utils/utils';
 import ExportDataButton from '../components/ExportDataButton';
@@ -31,7 +32,7 @@ function TabPanel(props) {
 export default function MainPage() {
   const { isLoading, boardConfig, cfdData, updateUserFilters } = useJiraDataContext();
   const [searchParams, setSearchParams] = useSearchParams();
-  const tabNames = ['cycleTime', 'agingChart', 'cfd', 'predictability', 'tasks'];
+  const tabNames = ['cycleTime', 'throughput', 'agingChart', 'cfd', 'predictability', 'tasks'];
   const tabParam = searchParams.get('tab');
   const [value, setValue] = useState(Math.max(tabNames.indexOf(tabParam), 0));
 
@@ -53,15 +54,18 @@ export default function MainPage() {
         await sendPageViewEvent('Lead Time Histogram', 'leadTime');
         break;
       case 1:
-        await sendPageViewEvent('Aging Chart', 'agingChart');
+        await sendPageViewEvent('Throughput Chart', 'throughput');
         break;
       case 2:
-        await sendPageViewEvent('Cumulative Flow Diagram', 'cfd');
+        await sendPageViewEvent('Aging Chart', 'agingChart');
         break;
       case 3:
-        await sendPageViewEvent('Predictability Chart', 'predictability');
+        await sendPageViewEvent('Cumulative Flow Diagram', 'cfd');
         break;
       case 4:
+        await sendPageViewEvent('Predictability Chart', 'predictability');
+        break;
+      case 5:
         await sendPageViewEvent('Tasks Table', 'tasks');
         break;
       default:
@@ -88,6 +92,7 @@ export default function MainPage() {
       >
         <Tabs value={value} onChange={handleChange}>
           <Tab label="Cycle Time" />
+          <Tab label="Throughput" />
           <Tab label="Aging Chart" />
           <Tab label="CFD" />
           <Tab label="Predictability" />
@@ -105,15 +110,18 @@ export default function MainPage() {
         <LeadTimeChart />
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <AgingChart />
+        <ThroughputChart />
       </TabPanel>
       <TabPanel value={value} index={2}>
-        <CumulativeDiagram />
+        <AgingChart />
       </TabPanel>
       <TabPanel value={value} index={3}>
-        <PredictabilityChart />
+        <CumulativeDiagram />
       </TabPanel>
       <TabPanel value={value} index={4}>
+        <PredictabilityChart />
+      </TabPanel>
+      <TabPanel value={value} index={5}>
         <TasksTable />
       </TabPanel>
       {/* {isDebug && (

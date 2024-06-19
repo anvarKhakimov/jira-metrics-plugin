@@ -444,3 +444,169 @@ export function debugError(...messages) {
     console.error(...messages);
   }
 }
+
+export const getCompletedTasks = (tasks, lastColumnIndex) => {
+  const completedTasks = [];
+
+  Object.values(tasks).forEach((task) => {
+    const lastColumnVisited = Object.keys(task.starts).sort((a, b) => parseInt(b) - parseInt(a))[0];
+    console.log(`Task ${task.key} - lastColumnVisited:`, lastColumnVisited);
+
+    if (parseInt(lastColumnVisited) === lastColumnIndex) {
+      console.log(`Task ${task.key} is completed`);
+      completedTasks.push(task);
+    }
+  });
+
+  return completedTasks;
+};
+
+export const prepareThroughputHistogramData = (
+  completedTasks,
+  timeframeFrom,
+  timeframeTo,
+  resolution
+) => {
+  const throughputHistogramData = [];
+  const startDate = new Date(timeframeFrom);
+  const endDate = new Date(timeframeTo);
+
+  while (startDate <= endDate) {
+    const intervalStart = new Date(startDate);
+    const intervalEnd = new Date(startDate);
+    intervalEnd.setDate(startDate.getDate() + (resolution === 'week' ? 6 : 0));
+
+    const intervalCompletedTasks = completedTasks.filter((task) => {
+      const lastColumnVisited = Object.keys(task.starts).sort(
+        (a, b) => parseInt(b) - parseInt(a)
+      )[0];
+      const completionTime =
+        task.starts[lastColumnVisited][task.starts[lastColumnVisited].length - 1];
+      const completionDate = new Date(completionTime);
+      return completionDate >= intervalStart && completionDate <= intervalEnd;
+    });
+
+    throughputHistogramData.push({
+      period: intervalStart.toISOString().slice(0, 10),
+      count: intervalCompletedTasks.length,
+    });
+
+    startDate.setDate(startDate.getDate() + (resolution === 'week' ? 7 : 1));
+  }
+
+  return throughputHistogramData;
+};
+
+// @todo проверить
+// не должен попадать, еще в разработке https://jira.hh.ru/browse/PORTFOLIO-28943
+// попал не в тот диапазон https://jira.hh.ru/browse/PORTFOLIO-29266
+// попал не в тот диапазон https://jira.hh.ru/browse/PORTFOLIO-30458
+export const prepareThroughputData = (
+  completedTasks,
+  timeframeFrom,
+  timeframeTo,
+  resolution,
+  jiraDomain,
+  activeColumns,
+  allColumns
+) => {
+  console.log('prepareThroughputData - completedTasks:', completedTasks);
+  console.log('prepareThroughputData - timeframeFrom:', timeframeFrom);
+  console.log('prepareThroughputData - timeframeTo:', timeframeTo);
+  console.log('prepareThroughputData - resolution:', resolution);
+  console.log('prepareThroughputData - jiraDomain:', jiraDomain);
+  console.log('prepareThroughputData - activeColumns:', activeColumns);
+  console.log('prepareThroughputData - allColumns:', allColumns);
+
+  const throughputData = [];
+  const startDate = new Date(timeframeFrom);
+  const endDate = new Date(timeframeTo);
+  const processedTasks = {}; // Объект для отслеживания обработанных задач
+
+  const getIntervalDuration = () => {
+    switch (resolution) {
+      case 'day':
+        return 1;
+      case 'week':
+        return 7;
+      case 'two-weeks':
+        return 14;
+      case 'month':
+        return 30;
+      default:
+        return 1;
+    }
+  };
+
+  const intervalDuration = getIntervalDuration();
+
+  while (startDate <= endDate) {
+    const intervalStart = new Date(startDate);
+    const intervalEnd = new Date(startDate);
+    intervalEnd.setDate(intervalStart.getDate() + intervalDuration - 1);
+
+    const intervalCompletedTasks = completedTasks.filter((task) => {
+      const lastSelectedColumnIndex = activeColumns[activeColumns.length - 1].index;
+
+      for (
+        let columnIndex = lastSelectedColumnIndex;
+        columnIndex < allColumns.length;
+        columnIndex++
+      ) {
+        const completionTime = task.starts[columnIndex] ? task.starts[columnIndex][0] : null;
+
+        if (completionTime) {
+          const completionDate = new Date(parseInt(completionTime));
+
+          // Сравниваем только даты, без учета времени
+          const completionDateOnly = new Date(
+            completionDate.getFullYear(),
+            completionDate.getMonth(),
+            completionDate.getDate()
+          );
+          const intervalStartOnly = new Date(
+            intervalStart.getFullYear(),
+            intervalStart.getMonth(),
+            intervalStart.getDate()
+          );
+          const intervalEndOnly = new Date(
+            intervalEnd.getFullYear(),
+            intervalEnd.getMonth(),
+            intervalEnd.getDate()
+          );
+
+          if (completionDateOnly >= intervalStartOnly && completionDateOnly <= intervalEndOnly) {
+            return true;
+          }
+        }
+      }
+
+      return false;
+    });
+
+    console.log('intervalCompletedTasks:', intervalCompletedTasks);
+
+    // Исключаем обработанные задачи из выборки
+    const uniqueIntervalCompletedTasks = intervalCompletedTasks.filter(
+      (task) => !processedTasks[task.key]
+    );
+
+    console.log('uniqueIntervalCompletedTasks:', uniqueIntervalCompletedTasks);
+
+    throughputData.push({
+      interval: intervalStart.toISOString().slice(0, 10),
+      count: uniqueIntervalCompletedTasks.length,
+      tasks: uniqueIntervalCompletedTasks.map((task) => task.key),
+      taskLinks: uniqueIntervalCompletedTasks.map((task) => `${jiraDomain}/browse/${task.key}`),
+    });
+
+    // Добавляем обработанные задачи в processedTasks
+    uniqueIntervalCompletedTasks.forEach((task) => {
+      processedTasks[task.key] = true;
+    });
+
+    startDate.setDate(startDate.getDate() + intervalDuration);
+  }
+
+  return throughputData;
+};
