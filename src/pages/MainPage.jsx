@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { AppBar, Tabs, Tab, Box, Typography } from '@mui/material';
+import { AppBar, Tabs, Tab, Box, Typography, IconButton } from '@mui/material';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { useJiraDataContext } from '../contexts/JiraDataContext';
 import { ChartDataProvider } from '../contexts/ChartDataContext';
 import LeadTimeChart from '../components/LeadTimeChart/LeadTimeChart';
@@ -83,7 +84,13 @@ export default function MainPage() {
       <AppBar
         position="static"
         color="default"
-        style={{ backgroundColor: isDebug ? '#fac7c7' : undefined }}
+        sx={{
+          bgcolor: isDebug ? '#fac7c7' : undefined,
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
         elevation={0}
       >
         <Tabs value={value} onChange={handleChange}>
@@ -93,6 +100,24 @@ export default function MainPage() {
           <Tab label="Predictability" />
           <Tab label="Tasks Table" />
         </Tabs>
+        <IconButton
+          href="https://github.com/anvarKhakimov/jira-metrics-plugin/wiki"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="documentation"
+          sx={{
+            marginRight: '16px',
+            '& .MuiSvgIcon-root': {
+              color: '#757575 !important',
+              transition: 'color 0.3s',
+            },
+            '&:hover .MuiSvgIcon-root': {
+              color: '#424242 !important',
+            },
+          }}
+        >
+          <HelpOutlineIcon />
+        </IconButton>
       </AppBar>
       {boardConfig && boardConfig.name && (
         <Box my={2}>
