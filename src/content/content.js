@@ -23,7 +23,8 @@ function addButton() {
     return;
   }
 
-  const buttonLocation = document.querySelector('#ghx-modes-tools');
+  const buttonLocation =
+    document.querySelector('#ghx-modes-tools') || document.querySelector('#ghx-operations');
 
   if (buttonLocation) {
     const button = document.createElement('button');
