@@ -27,25 +27,19 @@ export function JiraDataProvider({ children }) {
   const [isLoading, setIsLoading] = useState(false);
   const [boardConfig, setBoardConfig] = useState(null);
   const [cfdData, setCFDData] = useState(null);
-  // const [filters, setFilters] = useState([]);
   const [allSwimlanes, setAllSwimlanes] = useState([]);
-  // const [activeSwimlanes, setActiveSwimlanes] = useState([]);
 
   const query = useQuery();
-  const protocol = query.get('protocol') || 'https:';
-  const hostname = query.get('host');
-  const port = query.get('port');
-  const baseUrl = port ? `${protocol}//${hostname}:${port}` : `${protocol}//${hostname}`;
+  const host = query.get('host');
   const rapidViewParam = query.get('rapidView');
 
   useEffect(() => {
-    if (hostname !== '' && rapidViewParam !== '') {
-      setJiraBaseUrl(baseUrl);
+    if (host && rapidViewParam) {
+      setJiraBaseUrl(host);
       setRapidView(rapidViewParam);
     } else {
-      // @TODO дописать показ ошибки
       setIsLoading(true);
-      debugError('Hostname or rapidView are empty.', { hostname, rapidViewParam });
+      debugError('Host or rapidView are empty.', { host, rapidViewParam });
     }
   }, []);
 

@@ -1,36 +1,56 @@
 const tabsData = {};
 
+const jiraUrlPatterns = [
+  /^https?:\/\/.*\/secure\/RapidBoard\.jspa\?.*$/,
+  /^https:\/\/.*\/jira\/software\/projects\/.*\/boards\/.*$/,
+  /^https:\/\/.*\/jira\/software\/c\/projects\/.*$/,
+];
+
+function getJiraHost(url) {
+  const urlObj = new URL(url);
+  const serverIndex = urlObj.pathname.indexOf('/secure/RapidBoard.jspa');
+  return serverIndex !== -1
+    ? url.substring(0, url.indexOf(urlObj.pathname) + serverIndex)
+    : `${urlObj.protocol}//${urlObj.hostname}`;
+}
+
 function getRapidViewParamFromUrl(url) {
   const rapidViewParam = url.searchParams.get('rapidView');
-  if (rapidViewParam) {
-    return rapidViewParam;
-  }
+  if (rapidViewParam) return rapidViewParam;
 
   const pathSegments = url.pathname.split('/');
   const boardIndex = pathSegments.indexOf('boards');
-  if (boardIndex !== -1 && boardIndex < pathSegments.length - 1) {
-    return pathSegments[boardIndex + 1];
-  }
-
-  return 'default';
+  return boardIndex !== -1 && boardIndex < pathSegments.length - 1
+    ? pathSegments[boardIndex + 1]
+    : 'default';
 }
 
-chrome.runtime.onMessage.addListener((message, sender) => {
-  if (message.type === 'openDataPage') {
-    const jiraOriginalUrl = sender.tab.url;
-    const urlObj = new URL(jiraOriginalUrl);
-    const { protocol, hostname, port } = urlObj;
-    const { rapidView } = message;
-    const pluginPageURL = `index.html?protocol=${protocol}&host=${hostname}${port ? `&port=${port}` : ''}&rapidView=${rapidView}`;
+function createPluginPage(jiraOriginalUrl, rapidView) {
+  const jiraHost = getJiraHost(jiraOriginalUrl);
+  const pluginPageURL = `index.html?host=${encodeURIComponent(jiraHost)}&rapidView=${rapidView}`;
 
-    chrome.tabs.create({ url: pluginPageURL }, (tab) => {
-      tabsData[tab.id] = { jiraOriginalUrl };
-    });
-  }
-});
+  chrome.tabs.create({ url: pluginPageURL }, (tab) => {
+    tabsData[tab.id] = { jiraOriginalUrl };
+  });
+}
+
+function isJiraUrl(url) {
+  return jiraUrlPatterns.some((pattern) => pattern.test(url));
+}
+
+function updateIconState(tabId, tab) {
+  const isJira = isJiraUrl(tab.url);
+  chrome.action[isJira ? 'enable' : 'disable'](tabId);
+  chrome.action.setTitle({
+    tabId,
+    title: isJira ? 'Analyze Jira Metrics' : 'Plugin is not available on this page',
+  });
+}
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.type === 'getJiraOriginalUrlForTab') {
+  if (message.type === 'openDataPage') {
+    createPluginPage(sender.tab.url, message.rapidView);
+  } else if (message.type === 'getJiraOriginalUrlForTab') {
     const dataForTab = tabsData[sender.tab.id];
     if (dataForTab) {
       sendResponse(dataForTab);
@@ -41,60 +61,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 chrome.action.onClicked.addListener((tab) => {
-  const jiraUrlPatterns = [
-    /^http:\/\/.*\/secure\/RapidBoard\.jspa\?.*$/,
-    /^https:\/\/.*\/secure\/RapidBoard\.jspa\?.*$/,
-    /^https:\/\/.*\/jira\/software\/projects\/.*\/boards\/.*$/,
-    /^https:\/\/.*\/jira\/software\/c\/projects\/.*$/,
-  ];
-
-  const urlMatchesPattern = jiraUrlPatterns.some((pattern) => pattern.test(tab.url));
-
-  if (urlMatchesPattern) {
+  if (isJiraUrl(tab.url)) {
     const url = new URL(tab.url);
     const rapidView = getRapidViewParamFromUrl(url);
-
-    const pluginPageURL = `index.html?protocol=${url.protocol}&host=${url.hostname}${url.port ? `&port=${url.port}` : ''}&rapidView=${rapidView}`;
-
-    chrome.tabs.create({ url: pluginPageURL }, (newTab) => {
-      tabsData[newTab.id] = { jiraOriginalUrl: tab.url };
-    });
+    createPluginPage(url.href, rapidView);
   }
 });
 
-function updateIconState(tabId, changeInfo, tab) {
-  const jiraUrlPatterns = [
-    /^http:\/\/.*\/secure\/RapidBoard\.jspa\?.*$/,
-    /^https:\/\/.*\/secure\/RapidBoard\.jspa\?.*$/,
-    /^https:\/\/.*\/jira\/software\/projects\/.*\/boards\/.*$/,
-    /^https:\/\/.*\/jira\/software\/c\/projects\/.*$/,
-  ];
+chrome.tabs.onUpdated.addListener((tabId, _, tab) => updateIconState(tabId, tab));
 
-  const urlMatchesPattern = jiraUrlPatterns.some((pattern) => pattern.test(tab.url));
-
-  if (urlMatchesPattern) {
-    chrome.action.enable(tabId);
-    chrome.action.setTitle({ tabId, title: 'Analyze Jira Metrics' });
-  } else {
-    chrome.action.disable(tabId);
-    chrome.action.setTitle({ tabId, title: 'Plugin is not available on this page' });
-  }
-}
-
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  updateIconState(tabId, changeInfo, tab);
-});
-
-chrome.tabs.onActivated.addListener((activeInfo) => {
-  chrome.tabs.get(activeInfo.tabId, (tab) => {
-    updateIconState(activeInfo.tabId, {}, tab);
-  });
+chrome.tabs.onActivated.addListener(({ tabId }) => {
+  chrome.tabs.get(tabId, (tab) => updateIconState(tabId, tab));
 });
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.tabs.query({}, (tabs) => {
-    tabs.forEach((tab) => {
-      updateIconState(tab.id, {}, tab);
-    });
+    tabs.forEach((tab) => updateIconState(tab.id, tab));
   });
 });

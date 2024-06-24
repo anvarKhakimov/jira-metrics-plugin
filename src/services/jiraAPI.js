@@ -1,10 +1,17 @@
 import { debugError } from '../utils/utils';
 
 const makeApiUrl = (baseUrl, path, params = new URLSearchParams()) => {
-  const url = new URL(path, baseUrl);
+  const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+
+  const fullPath = `${normalizedBaseUrl}${normalizedPath}`;
+
+  const url = new URL(fullPath);
+
   params.forEach((value, key) => {
     url.searchParams.append(key, value);
   });
+
   return url.toString();
 };
 
