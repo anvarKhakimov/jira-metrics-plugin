@@ -17,7 +17,7 @@
       "48": "assets/icon48.png",
       "128": "assets/icon128.png"
     },
-    "default_title": "Click Me"
+    "default_title": "Analyze Jira Metrics"
   },
   "permissions": ["tabs", "storage"],
   "web_accessible_resources": [
