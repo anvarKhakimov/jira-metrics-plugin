@@ -63,7 +63,7 @@ function PredictabilityChart() {
 
   const data = useMemo(() => {
     const chartData = [];
-    const detailsByMonth = {}; // Для хранения деталей по месяцам
+    const detailsByMonth = {};
     const currentDate = new Date();
 
     for (let i = 0; i < 6; i += 1) {
@@ -73,7 +73,6 @@ function PredictabilityChart() {
       const dataTimeframeFrom = monthDate.toISOString().split('T')[0];
       const dataTimeframeTo = nextMonthDate.toISOString().split('T')[0];
 
-      // Создание filteredTasks
       const filteredTasks = prepareFilteredTasks(
         tasks,
         columns,
@@ -82,12 +81,11 @@ function PredictabilityChart() {
         dataTimeframeTo
       );
 
-      // Создание histogramArray с использованием filteredTasks
       const histogramArray = prepareHistogramArray(filteredTasks, resolution);
 
       const leadTimes = histogramArray.flatMap((item) => Array(item.count).fill(item.leadTime));
-      const taskIds = histogramArray.map((item) => item.tasks).flat(); // Собираем ID задач
-      const p95 = calculatePercentile(leadTimes, 95);
+      const taskIds = histogramArray.map((item) => item.tasks).flat();
+      const p98 = calculatePercentile(leadTimes, 98);
       const p50 = calculatePercentile(leadTimes, 50);
 
       const monthKey = monthDate.toLocaleString('default', {
@@ -96,22 +94,20 @@ function PredictabilityChart() {
       });
       chartData.push({
         name: monthKey,
-        predictability: p95 / p50,
+        predictability: p98 / p50,
       });
 
-      // Сохраняем детали для каждого месяца
       detailsByMonth[monthKey] = {
         leadTimes,
         taskIds,
-        p95,
+        p98,
         p50,
         taskCount: taskIds.length,
       };
     }
 
-    setDetails(detailsByMonth); // Обновляем состояние с деталями
+    setDetails(detailsByMonth);
 
-    // Отфильтровываем месяцы без данных (где p95 или p50 равны NaN или Infinity)
     const filteredChartData = chartData.filter(
       (item) => Number.isFinite(item.predictability) && !Number.isNaN(item.predictability)
     );
@@ -126,7 +122,7 @@ function PredictabilityChart() {
 
   return (
     <div>
-      <h3>Predictability Chart (95% / 50%)</h3>
+      <h3>Predictability Chart (98% / 50%)</h3>
 
       <ResponsiveContainer width="100%" height={400}>
         <LineChart data={data} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
@@ -135,7 +131,7 @@ function PredictabilityChart() {
           <YAxis
             width={40}
             label={{
-              value: 'Ratio to median (95% / 50%)',
+              value: 'Ratio to median (98% / 50%)',
               angle: -90,
               position: 'insideLeft',
               style: { fontSize: '10px', textAnchor: 'middle' },
@@ -176,7 +172,7 @@ function PredictabilityChart() {
           {Object.entries(details).map(([month, detail]) => (
             <div key={month}>
               <h3>Детали для {month}</h3>
-              <p>95-й процентиль: {detail.p95}</p>
+              <p>98-й процентиль: {detail.p98}</p>
               <p>50-й процентиль: {detail.p50}</p>
               <p>Количество задач: {detail.taskCount}</p>
               <p>Задачи: {detail.taskIds.join(', ')}</p>
