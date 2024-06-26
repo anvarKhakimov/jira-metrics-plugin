@@ -12,11 +12,13 @@ function CustomTooltip({ active, payload }) {
   if (active && payload && payload.length) {
     const { interval } = payload[0].payload;
     const { count } = payload[0].payload;
+    const { accumulatedAverage } = payload[0].payload;
 
     return (
       <div className="custom-tooltip" style={tooltipStyles}>
         <p>{`Interval: ${interval}`}</p>
-        <p>{`Tasks Completed: ${count}`}</p>
+        <p>{`Issues Completed: ${count}`}</p>
+        <p>{`Accumulated Average: ${accumulatedAverage ? accumulatedAverage.toFixed(2) : '-'}`}</p>
       </div>
     );
   }

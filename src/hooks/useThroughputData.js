@@ -48,9 +48,14 @@ export default function useThroughputData(boardConfig, cfdData, updateUserFilter
   useEffect(() => {
     if (cfdData && cfdData.columns && cfdData.columns.length > 0) {
       const lastColumnIndex = cfdData.columns.length - 1;
-      console.log('lastColumnIndex:', lastColumnIndex);
 
-      const completedTasks = getCompletedTasks(tasks, lastColumnIndex);
+      const completedTasks = getCompletedTasks(
+        tasks,
+        activeColumns,
+        allColumns,
+        timeframeFrom,
+        timeframeTo
+      );
       console.log('completedTasks:', completedTasks);
 
       const throughputData = prepareThroughputData(

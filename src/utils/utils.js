@@ -445,83 +445,70 @@ export function debugError(...messages) {
   }
 }
 
-export const getCompletedTasks = (tasks, lastColumnIndex) => {
+export const getCompletedTasks = (tasks, activeColumns, allColumns, timeframeFrom, timeframeTo) => {
+  if (activeColumns.length === 0) {
+    return [];
+  }
+
   const completedTasks = [];
 
   Object.values(tasks).forEach((task) => {
-    const lastColumnVisited = Object.keys(task.starts).sort((a, b) => parseInt(b) - parseInt(a))[0];
-    console.log(`Task ${task.key} - lastColumnVisited:`, lastColumnVisited);
+    const lastSelectedColumnIndex = activeColumns[activeColumns.length - 1].index;
 
-    if (parseInt(lastColumnVisited) === lastColumnIndex) {
-      console.log(`Task ${task.key} is completed`);
-      completedTasks.push(task);
+    for (
+      let columnIndex = lastSelectedColumnIndex;
+      columnIndex < allColumns.length;
+      columnIndex++
+    ) {
+      const completionTime = task.starts[columnIndex] ? task.starts[columnIndex][0] : null;
+
+      if (completionTime) {
+        const completionDate = new Date(parseInt(completionTime));
+        const timeframeFromDate = new Date(timeframeFrom);
+        const timeframeToDate = new Date(timeframeTo);
+
+        // Сравниваем только даты, без учета времени
+        const completionDateOnly = new Date(
+          completionDate.getFullYear(),
+          completionDate.getMonth(),
+          completionDate.getDate()
+        );
+        const timeframeFromDateOnly = new Date(
+          timeframeFromDate.getFullYear(),
+          timeframeFromDate.getMonth(),
+          timeframeFromDate.getDate()
+        );
+        const timeframeToDateOnly = new Date(
+          timeframeToDate.getFullYear(),
+          timeframeToDate.getMonth(),
+          timeframeToDate.getDate()
+        );
+
+        if (
+          completionDateOnly >= timeframeFromDateOnly &&
+          completionDateOnly <= timeframeToDateOnly
+        ) {
+          completedTasks.push(task);
+          break;
+        }
+      }
     }
   });
 
   return completedTasks;
 };
 
-export const prepareThroughputHistogramData = (
-  completedTasks,
-  timeframeFrom,
-  timeframeTo,
-  resolution
-) => {
-  const throughputHistogramData = [];
-  const startDate = new Date(timeframeFrom);
-  const endDate = new Date(timeframeTo);
-
-  while (startDate <= endDate) {
-    const intervalStart = new Date(startDate);
-    const intervalEnd = new Date(startDate);
-    intervalEnd.setDate(startDate.getDate() + (resolution === 'week' ? 6 : 0));
-
-    const intervalCompletedTasks = completedTasks.filter((task) => {
-      const lastColumnVisited = Object.keys(task.starts).sort(
-        (a, b) => parseInt(b) - parseInt(a)
-      )[0];
-      const completionTime =
-        task.starts[lastColumnVisited][task.starts[lastColumnVisited].length - 1];
-      const completionDate = new Date(completionTime);
-      return completionDate >= intervalStart && completionDate <= intervalEnd;
-    });
-
-    throughputHistogramData.push({
-      period: intervalStart.toISOString().slice(0, 10),
-      count: intervalCompletedTasks.length,
-    });
-
-    startDate.setDate(startDate.getDate() + (resolution === 'week' ? 7 : 1));
-  }
-
-  return throughputHistogramData;
-};
-
-// @todo проверить
-// не должен попадать, еще в разработке https://jira.hh.ru/browse/PORTFOLIO-28943
-// попал не в тот диапазон https://jira.hh.ru/browse/PORTFOLIO-29266
-// попал не в тот диапазон https://jira.hh.ru/browse/PORTFOLIO-30458
 export const prepareThroughputData = (
   completedTasks,
   timeframeFrom,
   timeframeTo,
   resolution,
-  jiraDomain,
-  activeColumns,
-  allColumns
+  jiraDomain
 ) => {
-  console.log('prepareThroughputData - completedTasks:', completedTasks);
-  console.log('prepareThroughputData - timeframeFrom:', timeframeFrom);
-  console.log('prepareThroughputData - timeframeTo:', timeframeTo);
-  console.log('prepareThroughputData - resolution:', resolution);
-  console.log('prepareThroughputData - jiraDomain:', jiraDomain);
-  console.log('prepareThroughputData - activeColumns:', activeColumns);
-  console.log('prepareThroughputData - allColumns:', allColumns);
-
   const throughputData = [];
   const startDate = new Date(timeframeFrom);
   const endDate = new Date(timeframeTo);
-  const processedTasks = {}; // Объект для отслеживания обработанных задач
+  const processedTasks = {};
 
   const getIntervalDuration = () => {
     switch (resolution) {
@@ -546,52 +533,36 @@ export const prepareThroughputData = (
     intervalEnd.setDate(intervalStart.getDate() + intervalDuration - 1);
 
     const intervalCompletedTasks = completedTasks.filter((task) => {
-      const lastSelectedColumnIndex = activeColumns[activeColumns.length - 1].index;
+      const lastStartsEntry = Object.entries(task.starts).sort((a, b) => b[0] - a[0])[0];
+      if (lastStartsEntry) {
+        const completionTime = lastStartsEntry[1][0];
+        const completionDate = new Date(parseInt(completionTime));
 
-      for (
-        let columnIndex = lastSelectedColumnIndex;
-        columnIndex < allColumns.length;
-        columnIndex++
-      ) {
-        const completionTime = task.starts[columnIndex] ? task.starts[columnIndex][0] : null;
+        // Сравниваем только даты, без учета времени
+        const completionDateOnly = new Date(
+          completionDate.getFullYear(),
+          completionDate.getMonth(),
+          completionDate.getDate()
+        );
+        const intervalStartOnly = new Date(
+          intervalStart.getFullYear(),
+          intervalStart.getMonth(),
+          intervalStart.getDate()
+        );
+        const intervalEndOnly = new Date(
+          intervalEnd.getFullYear(),
+          intervalEnd.getMonth(),
+          intervalEnd.getDate()
+        );
 
-        if (completionTime) {
-          const completionDate = new Date(parseInt(completionTime));
-
-          // Сравниваем только даты, без учета времени
-          const completionDateOnly = new Date(
-            completionDate.getFullYear(),
-            completionDate.getMonth(),
-            completionDate.getDate()
-          );
-          const intervalStartOnly = new Date(
-            intervalStart.getFullYear(),
-            intervalStart.getMonth(),
-            intervalStart.getDate()
-          );
-          const intervalEndOnly = new Date(
-            intervalEnd.getFullYear(),
-            intervalEnd.getMonth(),
-            intervalEnd.getDate()
-          );
-
-          if (completionDateOnly >= intervalStartOnly && completionDateOnly <= intervalEndOnly) {
-            return true;
-          }
-        }
+        return completionDateOnly >= intervalStartOnly && completionDateOnly <= intervalEndOnly;
       }
-
       return false;
     });
 
-    console.log('intervalCompletedTasks:', intervalCompletedTasks);
-
-    // Исключаем обработанные задачи из выборки
     const uniqueIntervalCompletedTasks = intervalCompletedTasks.filter(
       (task) => !processedTasks[task.key]
     );
-
-    console.log('uniqueIntervalCompletedTasks:', uniqueIntervalCompletedTasks);
 
     throughputData.push({
       interval: intervalStart.toISOString().slice(0, 10),
@@ -600,7 +571,6 @@ export const prepareThroughputData = (
       taskLinks: uniqueIntervalCompletedTasks.map((task) => `${jiraDomain}/browse/${task.key}`),
     });
 
-    // Добавляем обработанные задачи в processedTasks
     uniqueIntervalCompletedTasks.forEach((task) => {
       processedTasks[task.key] = true;
     });

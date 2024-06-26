@@ -5,6 +5,7 @@ import Histogram from './Histogram';
 import ReportTable from './ReportTable';
 import Filters from '../Filters/Filters';
 import { sendAnalyticsEvent } from '../../utils/google-analytics';
+import StatisticsTable from './StatisticsTable'; // Добавьте этот импорт
 
 function ThroughputChart() {
   const [showTable, setShowTable] = useState(false);
@@ -22,10 +23,6 @@ function ThroughputChart() {
     });
   };
 
-  if (!cfdData || !cfdData.columns) {
-    return <p>Loading...</p>;
-  }
-
   return (
     <div>
       <Histogram
@@ -35,6 +32,8 @@ function ThroughputChart() {
       />
       <br />
       <Filters />
+      <br />
+      <StatisticsTable throughputData={throughputData} />
       <br />
       <label htmlFor="showTable">
         <input id="showTable" type="checkbox" checked={showTable} onChange={handleTableChange} />
